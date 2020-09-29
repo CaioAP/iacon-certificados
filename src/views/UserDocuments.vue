@@ -1,10 +1,25 @@
 <template>
-  <h1>Documentos do usuário #{{ userhash }}</h1>
+  <Section title="Documentos">
+    <Form>
+      <Datatable :columns="[]" />
+    </Form>
+  </Section>
 </template>
 
 <script>
+import Section from '@/components/Section.vue'
+import Form from '@/components/Form.vue'
+import Datatable from '@/components/Datatable.vue'
+
 export default {
-  props: ['userhash']
+  props: {
+    userhash: String
+  },
+  components: {
+    Section,
+    Form,
+    Datatable
+  }
 }
 </script>
 

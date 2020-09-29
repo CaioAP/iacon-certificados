@@ -12,16 +12,20 @@ const routes = [
     props: true
   },
   {
-    path: '/new-user',
+    path: '/novo-ususuario',
     name: 'NewUser',
     component: () => import('../views/NewUser.vue')
   }
 ]
-
 const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
   routes
+})
+
+router.beforeEach((to, from, next) => {
+  document.title = 'IACON | Documentos'
+  next()
 })
 
 export default router
