@@ -1,0 +1,24 @@
+{
+  "name": "iacon-documentos-usuarios-back",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "dev": "nodemon --exec yarn start"
+  },
+  "dependencies": {
+    "busboy": "^0.3.1",
+    "cookie-parser": "~1.4.4",
+    "cors": "^2.8.5",
+    "debug": "~2.6.9",
+    "dotenv-safe": "^8.2.0",
+    "express": "~4.16.1",
+    "jsonwebtoken": "^8.5.1",
+    "md5": "^2.3.0",
+    "mongodb": "^3.6.2",
+    "morgan": "~1.9.1",
+    "node-sass-middleware": "0.11.0",
+    "nodemon": "^2.0.4",
+    "stream": "^0.0.2"
+  }
+}
