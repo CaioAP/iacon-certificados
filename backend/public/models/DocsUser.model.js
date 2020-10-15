@@ -3,24 +3,23 @@ const mongoURL = 'mongodb://localhost:27017/';
 const mongoOptions = { useUnifiedTopology: true };
 
 exports.findDocsUserByUsername = async (username, callback) => {
-  MongoClient.connect( mongoURL, mongoOptions, 
-    (err, db) => {
-      if (err) throw err;
+  MongoClient.connect( mongoURL, mongoOptions, (err, db) => {
+    if (err) throw err;
 
-      const dbo = db.db('iacon');
-      const query = { username };
+    const dbo = db.db('iacon');
+    const query = { username };
 
-      dbo.collection('documentos_usuarios')
-        .findOne(query)
-        .then(result => {
-          db.close();
-          callback(result);
-        })
-        .catch(err => {
-          db.close();
-          console.log('err :>> ', err);
-          callback(null, err);
-        });
+    dbo.collection('documentos_usuarios')
+      .findOne(query)
+      .then(result => {
+        db.close();
+        callback(result);
+      })
+      .catch(err => {
+        db.close();
+        console.log('err :>> ', err);
+        callback(null, err);
+      });
     }
   );
 }

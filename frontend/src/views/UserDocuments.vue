@@ -1,6 +1,6 @@
 <template>
   <div class="sections">
-    <Section title="Filtro">
+    <Section title="Documentos">
       <Form justify="end">
         <FormSelect
           col-size="2"
@@ -14,10 +14,6 @@
             }
           "
         ></FormSelect>
-      </Form>
-    </Section>
-    <Section title="Documentos">
-      <Form>
         <Datatable
           :columns="tableColumns"
           :data="tableData"
@@ -188,6 +184,7 @@ export default {
       this.files.forEach((f, i) => formData.append('files', this.files[i].file))
       console.log('formData.getAll("files") :>> ', formData.getAll('files'))
 
+      const self = this
       axios({
         method: 'post',
         url: `http://${location.hostname}:2160/users/documents`,
@@ -196,6 +193,10 @@ export default {
       })
         .then(response => {
           console.log(response)
+          this.$bvModal.hide(this.uploadModal.id)
+
+          self.$root.$children[0].alert.message = 'Arquivos inseridos com sucesso!'
+          self.$root.$children[0].alert.show = true
         })
         .catch(error => {
           console.log('error.response :>> ', error.response)

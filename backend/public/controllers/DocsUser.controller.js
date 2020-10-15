@@ -6,7 +6,16 @@ const Busboy = require('busboy');
 const jwt = require('jsonwebtoken');
 const docsConfig = require('../config/Documents.config.json');
 const { formatPeriodMMAAAA } = require('../utils/formats');
-const { findDocsUserByUsername, findDocsUserById } = require('../models/DocsUser.model');
+const { getCurrentDateTimeISOString } = require('../utils/dates');
+const { 
+  findDocsUserByUsername, 
+  findDocsUserById 
+} = require('../models/DocsUser.model');
+const { 
+  checkIfDocumentsFilesExists, 
+  createDocumentsFiles,
+  updateDocumentsFiles 
+} = require('../models/Documents.model');
 
 exports.authenticateUser = (req, res, next) => {
   findDocsUserByUsername(req.body.username, (userdata, err) => {
@@ -57,7 +66,7 @@ exports.handleFormData = (req, res, next) => {
 
   console.log(':>> Getting data from Request');
   const formData = new Map();
-  formData.set('files', {});
+  formData.set('files', []);
 
   busboy.on('field', (fieldName, value) => {
     console.log(`:>> fieldName: ${fieldName} -> value: ${value}`);
@@ -71,7 +80,6 @@ exports.handleFormData = (req, res, next) => {
       formatPeriodMMAAAA(formData.get('period'), '-'), 
       formData.get('documentPath')
     );
-    // TODO:
 
     if (!fs.existsSync(folderPath)) {
       fs.mkdirSync(folderPath, {recursive: true});
@@ -80,14 +88,18 @@ exports.handleFormData = (req, res, next) => {
     const filePath = path.join(folderPath, fileName);
     file.pipe(fs.createWriteStream(filePath));
 
-    formData.get('files')[fileName] = filePath;
+    const fileNameParts = fileName.split('.')
+    const fileExt = fileNameParts[fileNameParts.length - 1]
+    formData.get('files').push({
+      fileName,
+      fileExt,
+      modified: getCurrentDateTimeISOString()
+    })
   });
 
   busboy.on('finish', () => {
     console.log(':>> Finishing busboy');
-
     saveFileData(formData);
-    // console.log('formData :>> ', formData);
 
     res.status(200).send({ok: true});
   });
@@ -97,6 +109,25 @@ exports.handleFormData = (req, res, next) => {
 }
 
 const saveFileData = (formData) => {
-  console.log('formData :>> ', formData);
+  checkIfDocumentsFilesExists(formData, (result, err) => {
+    if (err) throw err
+
+    if (!result) createDocumentsFiles(formData);
+    else {
+      const files = formData.get('files');
+
+      result.files.forEach(r => {
+        let contains = false;
+        formData.get('files').forEach(f => {
+          if (r.fileName === f.fileName) contains = true; 
+        });
+
+        if (!contains) files.push(r);
+      });
+      formData.set('files', files);
+
+      updateDocumentsFiles(formData);
+    }
+  });
 }
 

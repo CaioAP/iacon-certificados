@@ -47,14 +47,16 @@ export default {
       this.$refs[this.inputId].click()
     },
     filesChanged(event) {
+      let startId = this.files.length
       for (let i = 0; i < event.target.files.length; i++) {
         const file = event.target.files[i]
         const fileNameParts = file.name.split('.')
         this.files.push({
-          id: i,
+          id: startId,
           ext: fileNameParts[fileNameParts.length - 1],
           file: file
         })
+        startId++
       }
 
       this.$emit('files', this.files)
