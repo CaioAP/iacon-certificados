@@ -1,7 +1,7 @@
 <template>
   <div id="nav" class="nav">
     <div class="nav-item">
-      <img :src="logoSoma" class="logo" />
+      <img :src="logoSoma" class="logo" id="logo-soma" />
 
       <router-link :to="{ name: 'Documentos', params: { userhash: 'qwerty' } }">
         Documentos
@@ -12,7 +12,7 @@
       </router-link>
     </div>
 
-    <img :src="logoIacon" class="logo" />
+    <img :src="logoIacon" class="logo" id="logo-iacon" />
   </div>
 </template>
 
@@ -73,6 +73,9 @@ div#nav {
   img.logo {
     max-width: 12rem;
     margin: auto 0.75rem;
+  }
+  img#logo-iacon {
+    max-width: 6rem;
   }
 }
 </style>

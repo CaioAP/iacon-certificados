@@ -1,6 +1,6 @@
 <template>
   <div class="sections">
-    <Section title="Documentos">
+    <Section title="Documentos Obrigatórios">
       <Form justify="end">
         <FormSelect
           col-size="2"
