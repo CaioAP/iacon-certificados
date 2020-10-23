@@ -11,7 +11,11 @@ const usersRouter = require('./routes/users');
 const app = express();
 
 app.use(cors({
-  origin: ['http://localhost:2260', 'http://200.233.132.162:2260']
+  origin: [
+    'http://localhost:2260', 
+    'http://200.233.132.162:2260',
+    'http://192.168.254.216:2260'
+  ]
 }));
 app.use(logger('dev'));
 app.use(express.json());
