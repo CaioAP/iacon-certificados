@@ -1,18 +1,20 @@
 <template>
   <div class="col-12">
     <div class="row d-flex justify-content-between">
-      <div class="col-1 input-group input-group-sm mb-1" v-if="showPerPage">
-        <select class="form-control" v-model="perPage">
+      <div class="col-3 input-group input-group-sm mb-1" v-if="showPerPage">
+        Mostrando
+        <select class="form-control table-perpage" v-model="perPage">
           <option v-for="(option, idx) in perPageOptions" :key="idx">{{
             option
           }}</option>
         </select>
+        linhas
       </div>
       <div class="col-3 input-group input-group-sm mb-2" v-if="showFilter">
         <input
           type="text"
           id="table-filter"
-          class="form-control"
+          class="form-control table-search"
           v-model="filter"
           placeholder="Pesquisar"
         />
@@ -53,7 +55,15 @@
         </b-table>
       </div>
       <div class="col-4 d-flex justify-content-start">
-        <p class="table-items-count">Mostrando {{ data.length }} itens</p>
+        <p class="table-items-count">
+          Mostrando itens {{ perPage * currentPage - perPage + 1 }} à
+          {{
+            perPage * currentPage > data.length
+              ? data.length
+              : perPage * currentPage
+          }}
+          de {{ data.length }} linhas
+        </p>
       </div>
       <div class="col-4 d-flex justify-content-end">
         <b-pagination
@@ -89,10 +99,10 @@ export default {
       type: Array,
       default: () => []
     },
-    perPage: {
-      type: Number,
-      default: 10
-    },
+    // perPage: {
+    //   type: Number,
+    //   default: 100
+    // },
     perPageOptions: {
       type: Array,
       default: () => [10, 25, 50, 75, 100]
@@ -138,9 +148,11 @@ export default {
     return {
       currentPage: 1,
       totalRows: 0,
-      totalRowsTimesTried: 0
+      totalRowsTimesTried: 0,
+      perPage: 100
     }
   },
+  watch: {},
   methods: {
     setTotalRows() {
       if (this.totalRowsTimesTried === 50) {
@@ -168,6 +180,15 @@ export default {
 </script>
 
 <style lang="scss">
+select.table-perpage {
+  margin: 0px 8px;
+  flex: inherit !important;
+}
+
+input.table-search {
+  margin-left: 8px;
+}
+
 .table {
   width: 100%;
   border-radius: 5px;

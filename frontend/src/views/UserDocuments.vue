@@ -1,8 +1,23 @@
 <template>
   <div class="sections">
-    <Section title="Documentos Obrigatórios">
-      <Form justify="end">
+    <Section title="Filtro">
+      <Form justify="start">
         <FormSelect
+          classes="no-bottom-margin"
+          col-size="4"
+          label-text="Empresa"
+          input-id="select-company"
+          :options="companyOptions"
+          :value="companySelected"
+          @change="
+            newValue => {
+              companySelected = newValue
+            }
+          "
+        ></FormSelect>
+
+        <FormSelect
+          classes="no-bottom-margin"
           col-size="2"
           label-text="Período"
           input-id="select-period"
@@ -14,43 +29,58 @@
             }
           "
         ></FormSelect>
+      </Form>
+    </Section>
+
+    <Section title="Documentos Obrigatórios">
+      <Form justify="center">
         <Datatable
           :columns="tableColumns"
-          :data="tableData"
+          :data="tableData.oblied"
           :buttons="tableActions"
         >
         </Datatable>
       </Form>
-
-      <!-- Info modal -->
-      <b-modal
-        :id="uploadModal.id"
-        :title="uploadModal.title"
-        class="file-modal"
-        size="lg"
-        ok-only
-        @hide="resetInfoModal"
-      >
-        <UploadFiles
-          @files="
-            newFiles => {
-              files = newFiles
-            }
-          "
-        ></UploadFiles>
-
-        <template v-slot:modal-footer>
-          <div class="w-100">
-            <button
-              class="btn btn-primary btn-apply float-right"
-              @click="uploadFiles"
-            >
-              Salvar
-            </button>
-          </div>
-        </template>
-      </b-modal>
     </Section>
+
+    <Section title="Documentos Extras">
+      <Form justify="center">
+        <Datatable
+          :columns="tableColumns"
+          :data="tableData.extra"
+          :buttons="tableActions"
+        >
+        </Datatable>
+      </Form>
+    </Section>
+
+    <b-modal
+      :id="uploadModal.id"
+      :title="uploadModal.title"
+      class="file-modal"
+      size="lg"
+      ok-only
+      @hide="resetInfoModal"
+    >
+      <UploadFiles
+        @files="
+          newFiles => {
+            files = newFiles
+          }
+        "
+      ></UploadFiles>
+
+      <template v-slot:modal-footer>
+        <div class="w-100">
+          <button
+            class="btn btn-primary btn-apply float-right"
+            @click="uploadFiles"
+          >
+            Salvar
+          </button>
+        </div>
+      </template>
+    </b-modal>
   </div>
 </template>
 
@@ -71,14 +101,29 @@ import {
 export default {
   data() {
     return {
-      tableData: [],
+      tableData: {
+        oblied: [],
+        extra: []
+      },
+      tableDataInit: {
+        oblied: [],
+        extra: []
+      },
       files: [],
       periodValue: '',
+      companySelected: '0',
+      companyOptions: [],
       uploadModal: {
         id: 'upload-modal',
         title: '',
         data: ''
       }
+    }
+  },
+  watch: {
+    companySelected(newValue) {
+      console.log('companySelected :>> ', newValue)
+      this.filterTableData([{ companyId: newValue }])
     }
   },
   computed: {
@@ -142,18 +187,31 @@ export default {
     checkForUserData() {
       if (this.userData.companies) {
         this.getUserDocuments()
+        this.setCompanyOptions()
       } else {
         setTimeout(this.checkForUserData, 100)
       }
     },
     getUserDocuments() {
-      this.tableData = []
       const userData = this.userData
       userData.companies.forEach(company => {
         const companyId = company[0]
-        userData.documents[companyId].forEach(document => {
+
+        for (const type in userData.documents) {
+          this.setUserDocumentsByType(userData, company, companyId, type)
+        }
+      })
+
+      this.tableDataInit = this.tableData
+    },
+    setUserDocumentsByType(userData, company, companyId, type) {
+      if (companyId in userData.documents[type]) {
+        const tableData = this.tableData
+
+        userData.documents[type][companyId].forEach(document => {
           const documentPath = document.split('/')
-          this.tableData.push({
+
+          tableData[type].push({
             companyId: companyId,
             companyName: company[1],
             companyCGCE: company[2],
@@ -162,7 +220,9 @@ export default {
             documentPath: document
           })
         })
-      })
+
+        this.tableData = tableData
+      }
     },
     showUploadModal(row, button) {
       console.log('row :>> ', row)
@@ -195,7 +255,8 @@ export default {
           console.log(response)
           this.$bvModal.hide(this.uploadModal.id)
 
-          self.$root.$children[0].alert.message = 'Arquivos inseridos com sucesso!'
+          self.$root.$children[0].alert.message =
+            'Arquivos inseridos com sucesso!'
           self.$root.$children[0].alert.show = true
         })
         .catch(error => {
@@ -211,6 +272,44 @@ export default {
     getPeriodName(periodValue) {
       const period = this.periodOptions.filter(p => p.value === periodValue)
       return period[0].name
+    },
+    setCompanyOptions() {
+      this.companyOptions = [
+        {
+          key: 0,
+          value: '',
+          name: 'Selecionar empresa',
+          disabled: true
+        }
+      ]
+
+      this.userData.companies.forEach(company => {
+        this.companyOptions.push({
+          key: company[0],
+          value: company[0],
+          name: company[1]
+        })
+      })
+    },
+    filterTableData(values) {
+      const tableDataInit = this.tableDataInit
+      const tableData = {
+        oblied: [],
+        extra: []
+      }
+
+      values.forEach(val => {
+        for (const key in val) {
+          tableDataInit.oblied.forEach(
+            data => data[key] == val[key] ? tableData.oblied.push(data) : null
+          )
+          tableDataInit.extra.forEach(
+            data => data[key] == val[key] ? tableData.extra.push(data) : null
+          )
+        }
+      })
+
+      this.tableData = tableData
     }
   },
   created() {},

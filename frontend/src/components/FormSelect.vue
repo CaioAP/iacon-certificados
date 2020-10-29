@@ -1,19 +1,20 @@
 <template>
-  <div :class="'input-group input-group-sm col-' + colSize">
+  <div :class="`input-group input-group-sm col-${colSize} ${classes}`">
     <label :for="inputId">{{ labelText }}</label>
     <select
       :class="`form-control ${validated ? 'validated' : 'not-validated'}`"
       :id="inputId"
       :disabled="disabled"
-      v-model="value"
+      v-model="selectedValue"
     >
       <option
         v-for="option in options"
         :key="option.key"
         :value="option.value"
         :disabled="option.disabled"
-        >{{ option.name }}</option
       >
+        {{ option.name }}
+      </option>
     </select>
     <span class="input-validation-message" v-show="!validated">{{
       validationMessage
@@ -24,6 +25,10 @@
 <script>
 module.exports = {
   props: {
+    classes: {
+      type: String,
+      default: ''
+    },
     colSize: {
       type: String,
       required: true
@@ -65,10 +70,19 @@ module.exports = {
       default: true
     }
   },
+  data() {
+    return {
+      selectedValue: ''
+    }
+  },
   watch: {
-    value() {
+    value(newValue) {
       this.validate()
-      this.$emit('change', this.value)
+      this.selectedValue = newValue
+      // this.$emit('change', this.value)
+    },
+    selectedValue(newValue) {
+      this.$emit('change', String(newValue))
     }
   },
   methods: {
@@ -113,5 +127,9 @@ span.input-validation-message {
   color: #dc3545;
   font-size: 12px;
   position: absolute;
+}
+
+.no-bottom-margin {
+  margin-bottom: 0px;
 }
 </style>
