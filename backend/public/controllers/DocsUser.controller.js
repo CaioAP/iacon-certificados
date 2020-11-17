@@ -14,7 +14,8 @@ const {
 const { 
   checkIfDocumentsFilesExists, 
   createDocumentsFiles,
-  updateDocumentsFiles 
+  updateDocumentsFiles,
+  loadDocumentFileInfo
 } = require('../models/Documents.model');
 
 exports.authenticateUser = (req, res, next) => {
@@ -129,5 +130,21 @@ const saveFileData = (formData) => {
       updateDocumentsFiles(formData);
     }
   });
+}
+
+exports.loadFileInfo = (req, res, next) => {
+  const path = req.query.path;
+  loadDocumentFileInfo(path, (result, error) => {
+    console.log('result :>> ', result);
+    if (error) return res.status(500).send({
+      ok: false, 
+      message: 'Erro ao tentar carregar o documento de informação!'
+    });
+
+    const file = fs.readFileSync(result.filepath);
+    
+    res.contentType(result.mimetype);
+    return res.send(file);
+  })
 }
 

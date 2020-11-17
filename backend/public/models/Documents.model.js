@@ -71,3 +71,24 @@ exports.updateDocumentsFiles = data => {
       });
   });
 }
+
+exports.loadDocumentFileInfo = (path, callback) => {
+  MongoClient.connect( mongoURL, mongoOptions, (err, db) => {
+    if (err) throw err;
+
+    const dbo = db.db('iacon');
+    const query = { folder: path };
+
+    dbo.collection('documentos_info')
+      .findOne(query)
+      .then(result => {
+        db.close();
+        callback(result);
+      })
+      .catch(err => {
+        db.close();
+        console.log('err :>> ', err);
+        callback(null, err);
+      });
+  });
+}

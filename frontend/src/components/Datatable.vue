@@ -26,6 +26,7 @@
           small
           striped
           stacked="md"
+          :ref="refId"
           :items="data"
           :fields="columns"
           :current-page="currentPage"
@@ -38,19 +39,27 @@
           @filtered="onFiltered"
         >
           <template v-slot:cell(actions)="row" v-if="buttons.length > 0">
-            <button
-              type="button"
-              :class="'btn btn-' + button.id"
-              @click="button.action(row, $event.target)"
-              v-for="button in buttons"
-              :key="button.id"
-            >
-              <font-awesome-icon
-                :icon="button.content"
-                v-if="button.type === 'icon'"
-              />
-              <p v-else>{{ button.content }}</p>
-            </button>
+            <div class="btn-table" v-for="button in buttons" :key="button.id">
+              <button
+                type="button"
+                :class="`btn btn-${button.id} ${row.item.noMovement 
+                  ? 'no-movement' 
+                  : ''}`"
+                @click="button.action(row, $event.target)"
+                :title="button.title ? button.title : ''"
+                :disabled="button.disabled ? true : false"
+              >
+                <font-awesome-icon
+                  :icon="button.content"
+                  v-if="button.id === 'hasfile' && row.item.hasfile"
+                />
+                <font-awesome-icon
+                  :icon="button.content"
+                  v-else-if="button.type === 'icon' && button.id !== 'hasfile'"
+                />
+                <p v-else-if="button.type === 'text'">{{ button.content }}</p>
+              </button>
+            </div>
           </template>
         </b-table>
       </div>
@@ -87,6 +96,10 @@
 <script>
 export default {
   props: {
+    refId: {
+      type: String,
+      required: true
+    },
     columns: {
       type: Array,
       required: true

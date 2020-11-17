@@ -115,6 +115,9 @@ div#app {
     transform: translateY(-1px);
     box-shadow: 0px 2px 4px 1px #88888888 !important;
   }
+  button.btn:disabled {
+    box-shadow: none !important;
+  }
   button.btn-apply {
     background-color: #276485 !important;
   }

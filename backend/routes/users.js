@@ -9,4 +9,6 @@ router.post('/auth', docsUserController.authenticateUser);
 
 router.post('/documents', docsUserController.handleFormData);
 
+router.get('/info', docsUserController.loadFileInfo);
+
 module.exports = router;
