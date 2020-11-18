@@ -29,16 +29,6 @@ app.use(sassMiddleware({
 }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.use((req, res, next) => {
-//   const token = req.headers.authorization;
-
-//   if (token) {
-
-//   }
-
-//   next();
-// })
-
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 

@@ -5,7 +5,10 @@ const path = require('path');
 const Busboy = require('busboy');
 const jwt = require('jsonwebtoken');
 const docsConfig = require('../config/Documents.config.json');
-const { formatPeriodMMAAAA } = require('../utils/formats');
+const { 
+  formatPeriodMMAAAA,
+  unformatPeriodAAAAMM
+} = require('../utils/formats');
 const { getCurrentDateTimeISOString } = require('../utils/dates');
 const { 
   findDocsUserByUsername, 
@@ -15,7 +18,8 @@ const {
   checkIfDocumentsFilesExists, 
   createDocumentsFiles,
   updateDocumentsFiles,
-  loadDocumentFileInfo
+  loadDocumentFileInfo,
+  findFilesByCompanyId
 } = require('../models/Documents.model');
 
 exports.authenticateUser = (req, res, next) => {
@@ -71,6 +75,10 @@ exports.handleFormData = (req, res, next) => {
 
   busboy.on('field', (fieldName, value) => {
     console.log(`:>> fieldName: ${fieldName} -> value: ${value}`);
+
+    if (fieldName === 'period')
+      value = unformatPeriodAAAAMM(value, '/');
+
     formData.set(fieldName, value);
   });
 
@@ -148,3 +156,20 @@ exports.loadFileInfo = (req, res, next) => {
   })
 }
 
+exports.getUserFiles = (req, res, next) => {
+  const data = {
+    companyIds: req.query.companyIds.split(','),
+    period: unformatPeriodAAAAMM(String(req.query.period), '/')
+  }
+
+  findFilesByCompanyId(data, (result, err) => {
+    if (err) return res.status(500).send({
+      message: 'Erro ao tentar retornar os arquivos do usuário'
+    });
+
+    res.status(200).send({
+      data: result,
+      message: 'Arquivos do usuário carregados com sucesso!'
+    });
+  })
+}

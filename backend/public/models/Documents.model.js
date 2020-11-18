@@ -92,3 +92,34 @@ exports.loadDocumentFileInfo = (path, callback) => {
       });
   });
 }
+
+exports.findFilesByCompanyId = (data, callback) => {
+  MongoClient.connect( mongoURL, mongoOptions, (err, db) => {
+    if (err) throw err;
+
+    const dbo = db.db('iacon');
+    const query = { 
+      companyId: { $in: data.companyIds },
+      period: data.period
+    };
+    const cursor = dbo.collection('documentos_files').find(query);
+    const files = {};
+
+    cursor.forEach(document => {
+      if (!(document.companyId in files))
+        files[document.companyId] = {};
+
+      files[document.companyId][document.documentPath] = [];
+      
+      document.files.forEach(file => {
+        files[document.companyId][document.documentPath].push(file.fileName)
+      });
+    }).then(() => {
+      callback(files);
+    })
+    .catch( error => {
+      console.error(error);
+      callback(null, error);
+    });
+  });
+}

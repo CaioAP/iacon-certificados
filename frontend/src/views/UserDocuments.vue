@@ -7,7 +7,6 @@
       dismissible
       variant="success"
       @dismissed="alert.countDown = 0"
-      @dismiss-count-down="countDownChanged"
     >
       <p class="alert-message">{{alert.message}}</p>
     </b-alert>
@@ -125,6 +124,7 @@ export default {
         extra: []
       },
       files: [],
+      documents: {},
       periodValue: '',
       companySelected: '0',
       companyOptions: [],
@@ -140,6 +140,9 @@ export default {
     companySelected(newValue) {
       console.log('companySelected :>> ', newValue)
       this.filterTableData([{ companyId: newValue }])
+    },
+    periodValue() {
+      if (this.userData.companies) this.getUserFiles()
     }
   },
   computed: {
@@ -222,7 +225,7 @@ export default {
   methods: {
     checkForUserData() {
       if (this.userData.companies) {
-        this.getUserDocuments()
+        this.getUserFiles()
         this.setCompanyOptions()
       } else {
         setTimeout(this.checkForUserData, 100)
@@ -230,6 +233,11 @@ export default {
     },
     getUserDocuments() {
       const userData = this.userData
+      this.tableData = {
+        oblied: [],
+        extra: []
+      }
+
       userData.companies.forEach(company => {
         const companyId = company[0]
 
@@ -243,17 +251,25 @@ export default {
     setUserDocumentsByType(userData, company, companyId, type) {
       if (companyId in userData.documents[type]) {
         const tableData = this.tableData
+        const documents = this.documents
 
         userData.documents[type][companyId].forEach(document => {
           const documentPath = document.split('/')
-
+          
+          const hasfile = companyId in documents 
+            ? document in documents[companyId]
+              ? true
+              : false
+            : false
+            
           tableData[type].push({
             companyId: companyId,
             companyName: company[1],
             companyCGCE: company[2],
             folder: documentPath[documentPath.length - 2],
             document: documentPath[documentPath.length - 1],
-            documentPath: document
+            documentPath: document,
+            hasfile
           })
         })
 
@@ -279,14 +295,14 @@ export default {
       this.uploadModal.content = ''
     },
     uploadFiles() {
-      console.log('this.files :>> ', this.files)
+      // console.log('this.files :>> ', this.files)
       const formData = new FormData()
 
       formData.append('companyId', this.uploadModal.data.companyId)
       formData.append('documentPath', this.uploadModal.data.documentPath)
       formData.append('period', this.getPeriodName(this.periodValue))
       this.files.forEach((f, i) => formData.append('files', this.files[i].file))
-      console.log('formData.getAll("files") :>> ', formData.getAll('files'))
+      // console.log('formData.getAll("files") :>> ', formData.getAll('files'))
 
       const self = this
       axios({
@@ -386,9 +402,21 @@ export default {
 
       this.alerts.push(alert)
     },
-    countDownChanged(alertCountDown) {
-      console.log('alertCountDown :>> ', alertCountDown)
-      // this.alertCountDown = alertCountDown
+    getUserFiles() {
+      const companyIds = '?companyIds=' + this.userData.companies.map(data => data[0]).join(',')
+      const period = 'period=' + this.periodValue
+      const params = [companyIds, period].join('&')
+      
+      axios.get(`http://${location.hostname}:2160/users/files${params}`)
+        .then( response => {
+          console.log(response)
+          this.documents = response.data.data
+
+          this.getUserDocuments()
+        })
+        .catch( error => {
+          console.error(error)
+        })
     }
   },
   created() {},
