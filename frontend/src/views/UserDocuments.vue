@@ -109,7 +109,8 @@ import {
   faCommentDots,
   faInfoCircle,
   faFolderOpen,
-  faArchive
+  faArchive,
+  faCheck
 } from '@fortawesome/free-solid-svg-icons'
 
 export default {
@@ -125,6 +126,7 @@ export default {
       },
       files: [],
       documents: {},
+      noMovements: {},
       periodValue: '',
       companySelected: '0',
       companyOptions: [],
@@ -203,7 +205,15 @@ export default {
           content: faArchive,
           contentSelected: 0,
           action: this.setFolderNoMovement,
-          title: 'Clique para selecionar esta pasta como sem movimento'
+          title: 'Clique para selecionar esta pasta sem movimento'
+        },
+        {
+          id: 'unarchive',
+          type: 'icon',
+          content: faCheck,
+          contentSelected: 0,
+          action: this.setFolderNoMovement,
+          title: 'Clique para selecionar esta pasta com movimento'
         }
       ]
     },
@@ -252,12 +262,21 @@ export default {
       if (companyId in userData.documents[type]) {
         const tableData = this.tableData
         const documents = this.documents
+        const noMovements = this.noMovements
 
         userData.documents[type][companyId].forEach(document => {
           const documentPath = document.split('/')
           
+          const noMovement = companyId in noMovements
+            ? document in noMovements[companyId]
+            && noMovements[companyId][document]
+              ? true
+              : false
+            : false
+
           const hasfile = companyId in documents 
-            ? document in documents[companyId]
+            ? document in documents[companyId] 
+            && documents[companyId][document].length > 0
               ? true
               : false
             : false
@@ -269,7 +288,8 @@ export default {
             folder: documentPath[documentPath.length - 2],
             document: documentPath[documentPath.length - 1],
             documentPath: document,
-            hasfile
+            hasfile,
+            noMovement
           })
         })
 
@@ -313,6 +333,11 @@ export default {
       })
         .then(response => {
           console.log(response)
+          const companyId = parseInt(formData.get('companyId'))
+          const documentPath = formData.get('documentPath')
+          this.updateDocuments(formData)
+          this.updateTableData({companyId, documentPath})
+
           this.$bvModal.hide(this.uploadModal.id)
 
           self.$root.$children[0].alert.message =
@@ -347,7 +372,7 @@ export default {
         this.companyOptions.push({
           key: company[0],
           value: company[0],
-          name: company[1]
+          name: company[1] + ' - ' + company[2]
         })
       })
     },
@@ -372,35 +397,19 @@ export default {
       this.tableData = tableData
     },
     setFolderNoMovement(row) {
-      const tableData = JSON.parse(JSON.stringify(this.tableData))
+      axios.post(`http://${location.hostname}:2160/users/no-movement`, { 
+        noMovement: row.item.noMovement,
+        documentPath: row.item.documentPath,
+        companyId: row.item.companyId,
+        period: this.periodValue
+      }).then( response => {
+        console.log('response :>> ', response)
+        const data = response.data.data
 
-      const noMovement = {}
-      for (const table in tableData) {
-        if (table == 'oblied' || table == 'extra') {
-          tableData[table].forEach(dte => {
-            if (
-              dte.companyId === row.item.companyId 
-              && dte.document == row.item.document
-            ) {
-              dte.noMovement = dte.noMovement ? false : true
-              noMovement.is = dte.noMovement
-              noMovement.document = dte.document
-              noMovement.companyId = dte.companyId
-            }
-          })
-        }
-      }
-
-      this.tableData = tableData
-      
-      const alert = {
-        idx: this.alerts.length,
-        countDown: 5
-      }
-      if (noMovement.is) alert.message = `Documento ${noMovement.document} da empresa ${noMovement.companyId} selecionado como sem movimento!`
-      else alert.message = `Documento ${noMovement.document} da empresa ${noMovement.companyId} selecionado como com movimento!`
-
-      this.alerts.push(alert)
+        this.updateTableData(data)
+      }).catch( error => {
+        console.error('error :>> ', error)
+      })
     },
     getUserFiles() {
       const companyIds = '?companyIds=' + this.userData.companies.map(data => data[0]).join(',')
@@ -410,13 +419,64 @@ export default {
       axios.get(`http://${location.hostname}:2160/users/files${params}`)
         .then( response => {
           console.log(response)
-          this.documents = response.data.data
+          
+          this.documents = response.data.data.files
+          this.noMovements = response.data.data.noMovements
 
           this.getUserDocuments()
         })
         .catch( error => {
           console.error(error)
         })
+    },
+    updateDocuments(formData) {
+      const companyId = formData.get('companyId')
+      const documentPath = formData.get('documentPath')
+      const files = formData.getAll('files')
+
+      if (
+        companyId in this.documents 
+        && documentPath in this.documents[companyId]
+      ) {
+        for (let i = 0; i < files.length; i++) {
+          this.documents[companyId][documentPath].push(files[i])
+        }
+      }
+    },
+    updateTableData(params) {
+      const tableData = JSON.parse(JSON.stringify(this.tableData))
+      const documents = this.documents
+
+      for (const table in tableData) {
+        if (table == 'oblied' || table == 'extra') {
+          tableData[table].forEach(row => {
+            if (
+              row.companyId === params.companyId 
+              && row.documentPath === params.documentPath
+            ) {
+              row.noMovement = !row.noMovement ? true : false
+              row.hasfile = row.companyId in documents 
+                ? row.documentPath in documents[row.companyId]
+                && documents[row.companyId][row.documentPath].length > 0
+                  ? true
+                  : false
+                : false
+            }
+          })
+        }
+      }
+
+      this.tableData = tableData
+    },
+    alertNoMovement() {
+        // const alert = {
+        //   idx: this.alerts.length,
+        //   countDown: 5
+        // }
+        // if (noMovement.is) alert.message = `Documento ${noMovement.document} da empresa ${noMovement.companyId} selecionado como sem movimento!`
+        // else alert.message = `Documento ${noMovement.document} da empresa ${noMovement.companyId} selecionado como com movimento!`
+
+        // this.alerts.push(alert)
     }
   },
   created() {},
@@ -466,8 +526,15 @@ table.table {
     background-color: #dc3545;
   }
   button.btn-archive.no-movement {
-    border-color: #343a40;
-    background-color: #343a40;
+    display: none;
+  }
+  button.btn-unarchive {
+    display: none;
+    border-color: #dc3545;
+    background-color: #dc3545;
+  }
+  button.btn-unarchive.no-movement {
+    display: inline-block;
   }
   button.btn-upload:active,
   button.btn-protocol:active,

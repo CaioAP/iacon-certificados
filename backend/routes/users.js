@@ -13,4 +13,6 @@ router.post('/documents', docsUserController.handleFormData);
 
 router.get('/info', docsUserController.loadFileInfo);
 
+router.post('/no-movement', docsUserController.setNoMovement);
+
 module.exports = router;

@@ -104,22 +104,61 @@ exports.findFilesByCompanyId = (data, callback) => {
     };
     const cursor = dbo.collection('documentos_files').find(query);
     const files = {};
+    const noMovements = {};
 
     cursor.forEach(document => {
-      if (!(document.companyId in files))
+      if (!(document.companyId in files)) 
         files[document.companyId] = {};
+      if (!(document.companyId in noMovements)) 
+      noMovements[document.companyId] = {};
 
       files[document.companyId][document.documentPath] = [];
-      
-      document.files.forEach(file => {
-        files[document.companyId][document.documentPath].push(file.fileName)
-      });
+      noMovements[document.companyId][document.documentPath] = document.noMovement;
+
+      if ('files' in document) {
+        document.files.forEach(file => {
+          files[document.companyId][document.documentPath].push(file.fileName)
+        });
+      }
     }).then(() => {
-      callback(files);
+      callback({files, noMovements});
     })
     .catch( error => {
       console.error(error);
       callback(null, error);
     });
+  });
+}
+
+exports.updateNoMovement = (data, callback) => {
+  MongoClient.connect( mongoURL, mongoOptions, (err, db) => {
+    if (err) throw err;
+
+    const dbo = db.db('iacon');
+    const query = {
+      $and: [
+        { companyId: data.companyId },
+        { period: data.period },
+        { documentPath: data.documentPath }
+      ]
+    };
+    const update = {
+      $set: {
+        noMovement: data.noMovement
+      }
+    }
+    const options = { upsert: true };
+
+    dbo.collection('documentos_files')
+      .updateOne(query, update, options)
+      .then( result => {
+        callback(result);
+        db.close();
+      })
+      .catch( err => {
+        console.error(err);
+        callback(null, err);
+        db.close();
+      });
   });
 }

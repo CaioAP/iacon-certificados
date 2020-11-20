@@ -19,7 +19,8 @@ const {
   createDocumentsFiles,
   updateDocumentsFiles,
   loadDocumentFileInfo,
-  findFilesByCompanyId
+  findFilesByCompanyId,
+  updateNoMovement
 } = require('../models/Documents.model');
 
 exports.authenticateUser = (req, res, next) => {
@@ -78,6 +79,8 @@ exports.handleFormData = (req, res, next) => {
 
     if (fieldName === 'period')
       value = unformatPeriodAAAAMM(value, '/');
+    if (fieldName === 'companyId')
+      value = parseInt(value);
 
     formData.set(fieldName, value);
   });
@@ -85,7 +88,7 @@ exports.handleFormData = (req, res, next) => {
   busboy.on('file', (fieldName, file, fileName, encoding, mimeType) => {
     const folderPath = path.join(
       docsConfig.path, 
-      formData.get('companyId'), 
+      String(formData.get('companyId')), 
       formatPeriodMMAAAA(formData.get('period'), '-'), 
       formData.get('documentPath')
     );
@@ -125,14 +128,16 @@ const saveFileData = (formData) => {
     else {
       const files = formData.get('files');
 
-      result.files.forEach(r => {
-        let contains = false;
-        formData.get('files').forEach(f => {
-          if (r.fileName === f.fileName) contains = true; 
+      if ('files' in result) {
+        result.files.forEach(r => {
+          let contains = false;
+          formData.get('files').forEach(f => {
+            if (r.fileName === f.fileName) contains = true; 
+          });
+  
+          if (!contains) files.push(r);
         });
-
-        if (!contains) files.push(r);
-      });
+      }
       formData.set('files', files);
 
       updateDocumentsFiles(formData);
@@ -158,7 +163,7 @@ exports.loadFileInfo = (req, res, next) => {
 
 exports.getUserFiles = (req, res, next) => {
   const data = {
-    companyIds: req.query.companyIds.split(','),
+    companyIds: req.query.companyIds.split(',').map(id => parseInt(id)),
     period: unformatPeriodAAAAMM(String(req.query.period), '/')
   }
 
@@ -171,5 +176,28 @@ exports.getUserFiles = (req, res, next) => {
       data: result,
       message: 'Arquivos do usuário carregados com sucesso!'
     });
+  })
+}
+
+exports.setNoMovement = (req, res, next) => {
+  const noMovement = !req.body.noMovement ? true : false
+  const data = {
+    noMovement,
+    documentPath: req.body.documentPath,
+    companyId: req.body.companyId,
+    period: unformatPeriodAAAAMM(req.body.period, '/'),
+    files: []
+  }
+
+  updateNoMovement(data, (result, err) => {
+    if (err) return res.status(500).send({
+      message: 'Erro ao tentar setar o documento como sem movimento'
+    });
+
+    res.status(200).send({
+      data,
+      result,
+      message: 'Documento setado como sem movimento'
+    })
   })
 }
