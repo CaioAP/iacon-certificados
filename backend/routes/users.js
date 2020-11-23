@@ -11,6 +11,8 @@ router.get('/files', docsUserController.getUserFiles);
 
 router.post('/documents', docsUserController.handleFormData);
 
+router.get('/checkinfo', docsUserController.checkFileInfo);
+
 router.get('/info', docsUserController.loadFileInfo);
 
 router.post('/no-movement', docsUserController.setNoMovement);

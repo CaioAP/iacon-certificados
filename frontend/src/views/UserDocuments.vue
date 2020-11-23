@@ -303,12 +303,18 @@ export default {
       this.$root.$emit('bv::show::modal', this.uploadModal.id, button)
     },
     showInfoFile(row) {
-      console.log('row :>> ', row)
-      
-      window.open(`http://${location.hostname}:2160/users/info?path=${row.item.documentPath}`)
-      // axios.get()
-      //   .then(response => )
-      //   .catch(error => console.error(error))
+      axios.get(`http://${location.hostname}:2160/users/checkinfo?path=${row.item.documentPath}`)
+        .then( response => {
+          console.log('response :>> ', response)
+
+          if (response.data.ok)
+            window.open(`http://${location.hostname}:2160/users/info?path=${row.item.documentPath}`)
+          else
+            alert(response.data.message)
+        })
+        .catch( error => {
+          console.error(error)
+        })
     },
     resetInfoModal() {
       this.uploadModal.title = ''

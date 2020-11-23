@@ -145,6 +145,27 @@ const saveFileData = (formData) => {
   });
 }
 
+exports.checkFileInfo = (req, res, next) => {
+  const path = req.query.path;
+
+  loadDocumentFileInfo(path, (result, error) => {
+    console.log('result :>> ', result);
+    if (error) return res.status(500).send({
+      ok: false, 
+      message: 'Erro ao tentar carregar o documento de informação!'
+    });
+
+    if (!result) return res.status(200).send({
+      ok: false,
+      message: 'Nenhum arquivo de informação existente!'
+    });
+    else return res.status(200).send({
+      ok: true,
+      message: 'Arquivo de informação carregado!'
+    })
+  })
+}
+
 exports.loadFileInfo = (req, res, next) => {
   const path = req.query.path;
   loadDocumentFileInfo(path, (result, error) => {
