@@ -161,25 +161,34 @@ exports.checkFileInfo = (req, res, next) => {
     });
     else return res.status(200).send({
       ok: true,
-      message: 'Arquivo de informação carregado!'
+      message: 'Arquivo de informação carregado!',
+      path: result.filepath,
+      mimetype: result.mimetype
     })
   })
 }
 
 exports.loadFileInfo = (req, res, next) => {
   const path = req.query.path;
-  loadDocumentFileInfo(path, (result, error) => {
-    console.log('result :>> ', result);
-    if (error) return res.status(500).send({
-      ok: false, 
-      message: 'Erro ao tentar carregar o documento de informação!'
-    });
+  const mimetype = req.query.mimetype;
 
-    const file = fs.readFileSync(result.filepath);
+  const file = fs.readFileSync(path);
+  
+  res.contentType(mimetype);
+  return res.send(file);
+
+  // loadDocumentFileInfo(path, (result, error) => {
+  //   console.log('result :>> ', result);
+  //   if (error) return res.status(500).send({
+  //     ok: false, 
+  //     message: 'Erro ao tentar carregar o documento de informação!'
+  //   });
+
+  //   const file = fs.readFileSync(result.filepath);
     
-    res.contentType(result.mimetype);
-    return res.send(file);
-  })
+  //   res.contentType(result.mimetype);
+  //   return res.send(file);
+  // })
 }
 
 exports.getUserFiles = (req, res, next) => {

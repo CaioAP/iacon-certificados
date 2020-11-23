@@ -308,7 +308,7 @@ export default {
           console.log('response :>> ', response)
 
           if (response.data.ok)
-            window.open(`http://${location.hostname}:2160/users/info?path=${row.item.documentPath}`)
+            window.open(`http://${location.hostname}:2160/users/info?path=${response.data.path}&mimetype=${response.data.mimetype}`)
           else
             alert(response.data.message)
         })
