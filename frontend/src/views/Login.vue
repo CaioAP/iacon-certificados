@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="d-flex justify-content-center">
     <img class="bg-image" :src="backgroundImage" alt="" />
     <form class="login" @submit.prevent="login">
       <img class="logo-image" :src="logoImage" alt="" />
@@ -25,11 +25,12 @@
           required
         />
       </div>
-      <button type="submit" class="btn btn-success btn-login">Login</button>
+      <button type="submit" id="btn-login" class="btn btn-success btn-login">Login</button>
       <b-alert v-model="alertLogin" variant="danger" dismissible>
         Erro ao tentar logar!
       </b-alert>
     </form>
+    <img class="logo-bottom" :src="logoBottom" alt="" />
   </div>
 </template>
 
@@ -46,10 +47,13 @@ export default {
   },
   computed: {
     backgroundImage() {
-      return require('@/assets/login-background.jpg')
+      return require('@/assets/login-background.png')
     },
     logoImage() {
-      return require('@/assets/logo-iacon.png')
+      return require('@/assets/logo-soma.png')
+    },
+    logoBottom() {
+      return require('@/assets/logo-gs.png')
     }
   },
   methods: {
@@ -79,7 +83,11 @@ export default {
 }
 .logo-image {
   width: 100%;
-  margin-bottom: 5vh;
+}
+.logo-bottom {
+  position: absolute;
+  bottom: 3vh;
+  max-width: 6vw;
 }
 .login {
   display: flex;
@@ -88,7 +96,6 @@ export default {
   padding: 10px;
   color: #fff;
   position: absolute;
-  top: 12.5vh;
   left: calc(50vw - 200px);
 
   .form-group {
@@ -106,13 +113,13 @@ export default {
     margin-bottom: 32px;
   }
 
-  button.btn-login {
+  button#btn-login {
     margin-bottom: 24px;
-    box-shadow: 0px 1px 2px 0px #00000088 !important;
+    box-shadow: 0px 1px 2px 0px #000000 !important;
   }
-  button.btn-login:hover {
+  button#btn-login:hover {
     transform: translateY(-1px);
-    box-shadow: 0px 2px 4px 1px #00000088 !important;
+    box-shadow: 0px 2px 4px 1px #000000 !important;
   }
 }
 </style>
