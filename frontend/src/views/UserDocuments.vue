@@ -436,17 +436,19 @@ export default {
         })
     },
     updateDocuments(formData) {
-      const companyId = formData.get('companyId')
+      const companyId = parseInt(formData.get('companyId'))
       const documentPath = formData.get('documentPath')
       const files = formData.getAll('files')
 
-      if (
-        companyId in this.documents 
-        && documentPath in this.documents[companyId]
-      ) {
-        for (let i = 0; i < files.length; i++) {
-          this.documents[companyId][documentPath].push(files[i])
-        }
+      if (!(companyId in this.documents)) {
+        this.documents[companyId] = {}
+      }
+      if (!(documentPath in this.documents[companyId])) {
+        this.documents[companyId][documentPath] = []
+      }
+
+      for (let i = 0; i < files.length; i++) {
+        this.documents[companyId][documentPath].push(files[i].name)
       }
     },
     updateTableData(params) {
@@ -460,7 +462,12 @@ export default {
               row.companyId === params.companyId 
               && row.documentPath === params.documentPath
             ) {
-              row.noMovement = !row.noMovement ? true : false
+              row.noMovement = 'noMovement' in params 
+                ? params.noMovement
+                : 'noMovement' in row
+                  ? row.noMovement
+                  : false
+
               row.hasfile = row.companyId in documents 
                 ? row.documentPath in documents[row.companyId]
                 && documents[row.companyId][row.documentPath].length > 0
