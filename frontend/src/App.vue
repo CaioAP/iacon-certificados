@@ -122,4 +122,46 @@ div#app {
     background-color: #276485 !important;
   }
 }
+
+div.modal {
+  input,
+  select,
+  textarea {
+    font-size: 14px;
+    font-family: robotoRegular;
+  }
+
+  input,
+  select,
+  textarea {
+    border-radius: 5px;
+    background-color: #ffffff;
+    box-shadow: 0px 1px 2px 0px #88888888;
+  }
+  input:focus,
+  select:focus,
+  textarea:focus {
+    transform: translateY(-1px);
+    box-shadow: 0px 2px 4px 1px #88888888;
+  }
+  input:disabled,
+  select:disabled,
+  textarea:disabled {
+    background-color: #eeeeee !important;
+  }
+
+  button.btn {
+    box-shadow: 0px 1px 2px 0px #88888888 !important;
+  }
+  button.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0px 2px 4px 1px #88888888 !important;
+  }
+  button.btn:disabled {
+    box-shadow: none !important;
+  }
+  button.btn-apply {
+    background-color: #276485 !important;
+  }
+}
 </style>

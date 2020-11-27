@@ -23,6 +23,8 @@ const {
   updateNoMovement
 } = require('../models/Documents.model');
 
+const { saveMessage, getAllMessages } = require('../models/Messages.model');
+
 exports.authenticateUser = (req, res, next) => {
   findDocsUserByUsername(req.body.username, (userdata, err) => {
     if (err)
@@ -176,19 +178,6 @@ exports.loadFileInfo = (req, res, next) => {
   
   res.contentType(mimetype);
   return res.send(file);
-
-  // loadDocumentFileInfo(path, (result, error) => {
-  //   console.log('result :>> ', result);
-  //   if (error) return res.status(500).send({
-  //     ok: false, 
-  //     message: 'Erro ao tentar carregar o documento de informação!'
-  //   });
-
-  //   const file = fs.readFileSync(result.filepath);
-    
-  //   res.contentType(result.mimetype);
-  //   return res.send(file);
-  // })
 }
 
 exports.getUserFiles = (req, res, next) => {
@@ -228,6 +217,52 @@ exports.setNoMovement = (req, res, next) => {
       data,
       result,
       message: 'Documento setado como sem movimento'
+    })
+  })
+}
+
+exports.getMessages = (req, res, next) => {
+  const data = {
+    companyId: parseInt(req.query.companyId),
+    period: parseInt(req.query.period),
+    documentPath: req.query.documentPath
+  }
+
+  getAllMessages(data, (result, err) => {
+    if (err) return res.status(500).send({
+      ok: false,
+      message: 'Erro ao tentar carregar as mensagens'
+    });
+    
+    res.status(200).send({
+      ok: true,
+      result,
+      message: 'Mensagens retornadas com sucesso!'
+    })
+  })
+}
+
+exports.setMessage = (req, res, next) => {
+  const data = {
+    companyId: req.body.companyId,
+    documentPath: req.body.documentPath,
+    period: parseInt(req.body.period),
+    username: req.body.username,
+    fullname: req.body.fullname,
+    text: req.body.text,
+    datetime: req.body.datetime,
+    usertype: req.body.usertype
+  }
+
+  saveMessage(data, (err) => {
+    if (err) return res.status(500).send({
+      ok: false,
+      message: 'Erro ao tentar salvar a mensagem'
+    });
+
+    res.status(200).send({
+      ok: true,
+      message: 'Mensagem salva com sucesso!'
     })
   })
 }

@@ -93,6 +93,52 @@
         </div>
       </template>
     </b-modal>
+
+    <b-modal
+      :id="messageModal.id"
+      :title="messageModal.title + ' - ' + formatPeriod(periodValue)"
+      class="message-modal"
+      size="lg"
+      ok-only
+      scrollable
+      @hide="resetInfoModal"
+    >
+      <MessageCard 
+        v-for="(message, index) in messageModal.messages" 
+        :key="index"
+        :fullname="message.fullname"
+        :text="message.text"
+        :datetime="message.datetime"
+        :usertype="message.usertype"
+        :my-message="message.myMessage"
+      >
+      </MessageCard>
+      <template v-slot:modal-footer>
+        <div class="w-100">
+          <Form justify="between">
+            <div class="col-11">
+              <input 
+                type="text" 
+                name="message" 
+                id="input-message" 
+                class="form-control input-message"
+                placeholder="Digite uma mensagem"
+                v-model="messageModal.input"
+              >
+            </div>
+            <div class="col-1">
+              <button
+                type="submit"
+                class="btn btn-primary btn-send"
+                @click="sendMessage"
+              >
+                <font-awesome-icon :icon="icons.faPaperPlane" size="lg"/>
+              </button>
+            </div>
+          </Form>
+        </div>
+      </template>
+    </b-modal>
   </div>
 </template>
 
@@ -103,6 +149,7 @@ import FormSelect from '@/components/FormSelect.vue'
 import axios from 'axios'
 import Datatable from '@/components/Datatable.vue'
 import UploadFiles from '@/components/UploadFiles.vue'
+import MessageCard from '@/components/MessageCard.vue'
 import {
   faCloudUploadAlt,
   faClipboardList,
@@ -110,7 +157,8 @@ import {
   faInfoCircle,
   faFolderOpen,
   faArchive,
-  faCheck
+  faCheck,
+  faPaperPlane
 } from '@fortawesome/free-solid-svg-icons'
 
 export default {
@@ -135,7 +183,25 @@ export default {
         title: '',
         data: ''
       },
+      messageModal: {
+        id: 'message-modal',
+        title: '',
+        data: '',
+        input: '',
+        usertype: 'client',
+        messages: []
+      },
       alerts: [],
+      icons: {
+        faCloudUploadAlt,
+        faClipboardList,
+        faCommentDots,
+        faInfoCircle,
+        faFolderOpen,
+        faArchive,
+        faCheck,
+        faPaperPlane
+      },
     }
   },
   watch: {
@@ -189,7 +255,7 @@ export default {
           id: 'comment',
           type: 'icon',
           content: faCommentDots,
-          action: () => {},
+          action: this.showMessageModal,
           title: 'Clique aqui para escrever uma mensagem'
         },
         {
@@ -490,6 +556,61 @@ export default {
         // else alert.message = `Documento ${noMovement.document} da empresa ${noMovement.companyId} selecionado como com movimento!`
 
         // this.alerts.push(alert)
+    },
+    showMessageModal(row, button) {
+      this.messageModal.messages = []
+      
+      axios.get(
+        `http://${location.hostname}:2160/users/message?companyId=${row.item.companyId}&period=${this.periodValue}&documentPath=${row.item.documentPath}`
+      ).then( response => {
+        const messageModal = this.messageModal
+        response.data.result.forEach(message => {
+          message.datetime = new Date(message.datetime)
+          message.myMessage = message.usertype === messageModal.usertype
+            ? true
+            : false
+
+          this.messageModal.messages.push(message)
+        })
+
+        this.messageModal.title = `Documento: ${row.item.document}`
+        this.messageModal.data = row.item
+        this.$root.$emit('bv::show::modal', this.messageModal.id, button)
+      }).catch( error => {
+        console.error(error);
+      })
+    },
+    sendMessage(event) {
+      event.preventDefault()
+      event.stopPropagation()
+
+      const data = {
+        companyId: this.messageModal.data.companyId,
+        documentPath: this.messageModal.data.documentPath,
+        period: this.periodValue,
+        fullname: this.$store.getters.getUserdata.name,
+        username: this.$store.getters.getUserdata.username,
+        text: this.messageModal.input,
+        datetime: new Date(),
+        usertype: this.messageModal.usertype,
+        myMessage: true
+      }
+
+      axios.post(`http://${location.hostname}:2160/users/message`, data)
+        .then( response => {
+          console.log('response.data :>> ', response.data)
+          if (response.data.ok) this.messageModal.messages.push(data)
+        })
+        .catch( error => {
+          console.error(error)
+        })
+
+      this.messageModal.input = ''
+    },
+    formatPeriod(period) {
+      const year = period.substr(0, 4)
+      const month = period.substr(4, 2)
+      return `${month}/${year}`
     }
   },
   created() {},
@@ -502,7 +623,8 @@ export default {
     Form,
     FormSelect,
     Datatable,
-    UploadFiles
+    UploadFiles,
+    MessageCard
   }
 }
 </script>
@@ -582,6 +704,32 @@ div.modal {
       background-color: #276485;
       border-color: #276485;
     }
+  }
+}
+
+div#message-modal {
+  .modal-dialog {
+    max-height: 90%;
+
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-footer {
+      padding: 0px;
+    }
+
+    button.btn-send {
+      background-color: transparent;
+      border-color: transparent;
+      box-shadow: none !important;
+      color: #276485;
+    }
+
+    // input.input-message {
+    //   border-radius: 5rem;
+    // }
   }
 }
 </style>

@@ -17,4 +17,8 @@ router.get('/info', docsUserController.loadFileInfo);
 
 router.post('/no-movement', docsUserController.setNoMovement);
 
+router.get('/message', docsUserController.getMessages);
+
+router.post('/message', docsUserController.setMessage);
+
 module.exports = router;
