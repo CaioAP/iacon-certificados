@@ -559,7 +559,7 @@ export default {
     },
     showMessageModal(row, button) {
       this.messageModal.messages = []
-      
+
       axios.get(
         `http://${location.hostname}:2160/users/message?companyId=${row.item.companyId}&period=${this.periodValue}&documentPath=${row.item.documentPath}`
       ).then( response => {
@@ -726,10 +726,6 @@ div#message-modal {
       box-shadow: none !important;
       color: #276485;
     }
-
-    // input.input-message {
-    //   border-radius: 5rem;
-    // }
   }
 }
 </style>

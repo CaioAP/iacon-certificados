@@ -251,7 +251,8 @@ exports.setMessage = (req, res, next) => {
     fullname: req.body.fullname,
     text: req.body.text,
     datetime: req.body.datetime,
-    usertype: req.body.usertype
+    usertype: req.body.usertype,
+    notification: true
   }
 
   saveMessage(data, (err) => {
