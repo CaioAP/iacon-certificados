@@ -9,7 +9,11 @@ router.post('/auth', docsUserController.authenticateUser);
 
 router.get('/files', docsUserController.getUserFiles);
 
-router.post('/documents', docsUserController.handleFormData);
+router.post('/documents', [
+  docsUserController.handleFormData,
+  docsUserController.saveFileData,
+  docsUserController.createDocumentActivity
+]);
 
 router.get('/checkinfo', docsUserController.checkFileInfo);
 

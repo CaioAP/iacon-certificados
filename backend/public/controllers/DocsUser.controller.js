@@ -23,6 +23,19 @@ const {
   updateNoMovement
 } = require('../models/Documents.model');
 
+const {
+  getActivitiesByFolderPath,
+  createActivities,
+  getResponsiblesByCompany,
+  checkIfProcessExists,
+  getAllDepartments,
+  updateProcessActivities
+} = require('../models/Processes.model');
+
+const {
+  getCompanyByCodigo
+} = require('../models/Companies.model');
+
 const { saveMessage, getAllMessages } = require('../models/Messages.model');
 
 exports.authenticateUser = (req, res, next) => {
@@ -113,16 +126,21 @@ exports.handleFormData = (req, res, next) => {
 
   busboy.on('finish', () => {
     console.log(':>> Finishing busboy');
-    saveFileData(formData);
+    req.body.formData = formData;
+    // saveFileData(formData);
+    // createDocumentActivity(formData);
 
     res.status(200).send({ok: true});
+    next();
   });
 
   console.log(':>> req.pipe(busboy)');
   return req.pipe(busboy);
 }
 
-const saveFileData = (formData) => {
+exports.saveFileData = (req, res, next) => {
+  const formData = req.body.formData;
+  
   checkIfDocumentsFilesExists(formData, (result, err) => {
     if (err) throw err
 
@@ -144,7 +162,95 @@ const saveFileData = (formData) => {
 
       updateDocumentsFiles(formData);
     }
+    next();
   });
+}
+
+exports.createDocumentActivity = async (req, res, next) => {
+  const formData = req.body.formData;
+  const companyId = formData.get('companyId');
+  const companyData = await getCompanyByCodigo(companyId);
+  const departments = await getAllDepartments();
+
+  if (!companyData) return console.error('Nenhuma empresa encontrada!');
+
+  const responsibles = await getResponsiblesByCompany(companyId);
+  if (!responsibles) return console.error('Erro ao tentar carregar os responsáveis a serem criados');
+  if (!responsibles.length) return console.log('Nenhum responsável a ser criado encontrado!');
+
+  const activities = await getActivitiesByFolderPath(formData.get('documentPath'));
+  if (!activities) return console.error('Erro ao tentar carregar as atividades a serem criadas');
+  if (!activities.length) return console.log('Nenhuma atividade a ser criada encontrada!');
+
+  const newProcesses = [];
+
+  activities.forEach((activity, idx) => {
+    console.log('activity :>> ', activity.descricao);
+
+    const currentDate = new Date();
+    currentDate.setDate(currentDate.getDate() + 30);
+    const vencimento = parseInt(currentDate.toISOString().split('T')[0].split('-').join(''));
+
+    const newActivity = {
+      idx,
+      status: 0,
+      atividade: activity.codigo,
+      nome: activity.descricao,
+      vencimento: vencimento,
+      entrega: null,
+      meta: vencimento,
+      comentario: '',
+      observacao: '',
+      arquivo: false,
+      document: true,
+      files: []
+    }
+
+    let newResponsibles = responsibles.filter(resp => resp.departamento === activity.departamento);
+    const maxDate = newResponsibles.map(resp => resp.date).reduce((resp1, resp2) => Math.max(resp1, resp2));
+    newResponsibles = newResponsibles.filter(resp => resp.date === maxDate);
+
+    newResponsibles.forEach(responsible => {
+      const processIdx = newProcesses.findIndex(process => process.responsavel === responsible.responsavel);
+      
+      if (processIdx == -1) {
+        newProcesses.push({
+          codigo: companyId,
+          empresa: companyData.nome,
+          cnpj: companyData.cnpj,
+          competencia: formData.get('period'),
+          cod_rotina: '000',
+          rotina: 'DOCUMENTO DO CLIENTE',
+          departamento: departments.find(dept => dept.id === activity.departamento).nome,
+          resp_dpto: responsible.resp_dpto,
+          resp_dpto_cod: responsible.resp_dpto_cod,
+          resp_dpto_nome: responsible.resp_dpto_nome,
+          responsavel: responsible.responsavel,
+          responsavel_cod: responsible.responsavel_cod,
+          responsavel_nome: responsible.responsavel_nome,
+          acesso: "0",
+          atividades: [newActivity]
+        });
+      } else {
+        newProcesses[processIdx].atividades.push(newActivity);
+      }
+    });
+  });
+      
+  const processExists = await checkIfProcessExists(newProcesses);
+
+  console.log('processExists :>> ', processExists);
+  console.log('newProcesses :>> ', newProcesses);
+  let result;
+  if (!processExists){
+    result = await createActivities(newProcesses);
+    console.log('result :>> ', result);
+    console.log('Processo criado com a lista de atividades');
+  } else {
+    result = await updateProcessActivities(newProcesses);
+    console.log('result :>> ', result);
+    console.log('Atividades inseridas no processo');
+  }
 }
 
 exports.checkFileInfo = (req, res, next) => {

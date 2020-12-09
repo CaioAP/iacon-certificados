@@ -2,7 +2,7 @@ const { MongoClient, ObjectId } = require('mongodb');
 const mongoURL = 'mongodb://localhost:27017/';
 const mongoOptions = { useUnifiedTopology: true };
 
-exports.checkIfDocumentsFilesExists = (data, callback) => {
+exports.checkIfDocumentsFilesExists = async (data, callback) => {
   MongoClient.connect( mongoURL, mongoOptions, (err, db) => {
     if (err) throw err;
 
