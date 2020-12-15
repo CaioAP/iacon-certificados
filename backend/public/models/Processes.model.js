@@ -185,3 +185,31 @@ exports.getAllDepartments = () => {
     });
   })
 }
+
+exports.getAllDepartmentResponsibles = () => {
+  return new Promise( (resolve, reject) => {
+    MongoClient.connect( mongoURL, mongoOptions, (err, db) => {
+      if (err) throw err;
+
+      const dbo = db.db('iacon');
+      // const query = { 'responsaveis.responsaveis.usuario': responsible };
+      const departments = {};
+
+      const cursor = dbo.collection('departamento_responsaveis').find({});
+
+      cursor.forEach(department => {
+        if (!(department.codigo in departments)) 
+          departments[department.codigo] = department
+        else if (departments[department.codigo].vigencia < department.vigencia)
+          departments[department.codigo] = department
+      }).then(() => {
+        db.close();
+        resolve(departments);
+      }).catch(error => {
+        console.error(error);
+        db.close();
+        resolve({});
+      })
+    });
+  });
+}

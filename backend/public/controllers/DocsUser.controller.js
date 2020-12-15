@@ -29,7 +29,8 @@ const {
   getResponsiblesByCompany,
   checkIfProcessExists,
   getAllDepartments,
-  updateProcessActivities
+  updateProcessActivities,
+  getAllDepartmentResponsibles
 } = require('../models/Processes.model');
 
 const {
@@ -166,6 +167,17 @@ exports.saveFileData = (req, res, next) => {
   });
 }
 
+const findResponsibleInDepartment = (responsibles, respUser, respFound = false) => {
+  responsibles.forEach(resp => {
+    if (respUser.toUpperCase() === resp.usuario)
+      respFound = true;
+    else if ('responsaveis' in resp)
+      respFound = findResponsibleInDepartment(resp.responsaveis, resp.usuario, respFound);
+  });
+
+  return respFound
+}
+
 exports.createDocumentActivity = async (req, res, next) => {
   const formData = req.body.formData;
   const companyId = formData.get('companyId');
@@ -177,6 +189,8 @@ exports.createDocumentActivity = async (req, res, next) => {
   const responsibles = await getResponsiblesByCompany(companyId);
   if (!responsibles) return console.error('Erro ao tentar carregar os responsáveis a serem criados');
   if (!responsibles.length) return console.log('Nenhum responsável a ser criado encontrado!');
+
+  const departmentResponsibles = await getAllDepartmentResponsibles();
 
   const activities = await getActivitiesByFolderPath(formData.get('documentPath'));
   if (!activities) return console.error('Erro ao tentar carregar as atividades a serem criadas');
@@ -211,28 +225,53 @@ exports.createDocumentActivity = async (req, res, next) => {
     newResponsibles = newResponsibles.filter(resp => resp.date === maxDate);
 
     newResponsibles.forEach(responsible => {
+      const department = departmentResponsibles[responsible.departamento];
       const processIdx = newProcesses.findIndex(process => process.responsavel === responsible.responsavel);
-      
-      if (processIdx == -1) {
-        newProcesses.push({
-          codigo: companyId,
-          empresa: companyData.nome,
-          cnpj: companyData.cnpj,
-          competencia: formData.get('period'),
-          cod_rotina: '000',
-          rotina: 'DOCUMENTO DO CLIENTE',
-          departamento: departments.find(dept => dept.id === activity.departamento).nome,
-          resp_dpto: responsible.resp_dpto,
-          resp_dpto_cod: responsible.resp_dpto_cod,
-          resp_dpto_nome: responsible.resp_dpto_nome,
-          responsavel: responsible.responsavel,
-          responsavel_cod: responsible.responsavel_cod,
-          responsavel_nome: responsible.responsavel_nome,
-          acesso: "0",
-          atividades: [newActivity]
-        });
+
+      if (findResponsibleInDepartment(department.responsaveis, responsible.responsavel)) {
+        if (processIdx == -1) {
+          newProcesses.push({
+            codigo: companyId,
+            empresa: companyData.nome,
+            cnpj: companyData.cnpj,
+            competencia: formData.get('period'),
+            cod_rotina: '000',
+            rotina: 'DOCUMENTO DO CLIENTE',
+            departamento: departments.find(dept => dept.id === activity.departamento).nome,
+            resp_dpto: responsible.resp_dpto,
+            resp_dpto_cod: responsible.resp_dpto_cod,
+            resp_dpto_nome: responsible.resp_dpto_nome,
+            responsavel: responsible.responsavel,
+            responsavel_cod: responsible.responsavel_cod,
+            responsavel_nome: responsible.responsavel_nome,
+            acesso: "0",
+            atividades: [newActivity]
+          });
+        } else {
+          newProcesses[processIdx].atividades.push(newActivity);
+        }
       } else {
-        newProcesses[processIdx].atividades.push(newActivity);
+        if (processIdx == -1) {
+          newProcesses.push({
+            codigo: companyId,
+            empresa: companyData.nome,
+            cnpj: companyData.cnpj,
+            competencia: formData.get('period'),
+            cod_rotina: '000',
+            rotina: 'DOCUMENTO DO CLIENTE',
+            departamento: departments.find(dept => dept.id === activity.departamento).nome,
+            resp_dpto: 'SEM.RESPONSAVEL',
+            resp_dpto_cod: 0,
+            resp_dpto_nome: 'SEM RESPONSÁVEL',
+            responsavel: 'SEM.RESPONSAVEL',
+            responsavel_cod: 0,
+            responsavel_nome: 'SEM RESPONSÁVEL',
+            acesso: "0",
+            atividades: [newActivity]
+          });
+        } else {
+          newProcesses[processIdx].atividades.push(newActivity);
+        }
       }
     });
   });
