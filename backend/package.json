@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "dev": "nodemon --exec yarn start"
+    "dev": "SET DEBUG=iacon:* & node ./bin/www",
+    "dev_old": "nodemon --exec yarn start"
   },
   "dependencies": {
     "busboy": "^0.3.1",
