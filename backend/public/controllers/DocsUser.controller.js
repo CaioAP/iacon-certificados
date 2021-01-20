@@ -87,12 +87,12 @@ exports.handleFormData = (req, res, next) => {
         headers: req.headers
     });
 
-    log(':>> Getting data from Request');
+    log(' Getting data from Request');
     const formData = new Map();
     formData.set('files', []);
 
     busboy.on('field', (fieldName, value) => {
-        log(`:>> fieldName: ${fieldName} -> value: ${value}`);
+        log(`     fieldName: ${fieldName} -> value: ${value}`);
 
         if (fieldName === 'period')
             value = unformatPeriodAAAAMM(value, '/');
@@ -127,7 +127,7 @@ exports.handleFormData = (req, res, next) => {
     });
 
     busboy.on('finish', () => {
-        log(':>> Finishing busboy');
+        log('Finishing busboy');
         req.body.formData = formData;
         // saveFileData(formData);
         // createDocumentActivity(formData);
@@ -136,7 +136,6 @@ exports.handleFormData = (req, res, next) => {
         next();
     });
 
-    log(':>> req.pipe(busboy)');
     return req.pipe(busboy);
 }
 
@@ -206,8 +205,6 @@ exports.createDocumentActivity = async (req, res, next) => {
     const newProcesses = [];
 
     activities.forEach((activity, idx) => {
-        log('activity :>> ', activity.descricao);
-
         const currentDate = new Date();
         currentDate.setDate(currentDate.getDate() + 30);
         const vencimento = parseInt(currentDate.toISOString().split('T')[0].split('-').join(''));
@@ -285,16 +282,12 @@ exports.createDocumentActivity = async (req, res, next) => {
 
     const processExists = await checkIfProcessExists(newProcesses);
 
-    log('processExists :>> ', processExists);
-    log('newProcesses :>> ', newProcesses);
     let result;
     if (!processExists) {
         result = await createActivities(newProcesses);
-        log('result :>> ', result);
         log('Processo criado com a lista de atividades');
     } else {
         result = await updateProcessActivities(newProcesses);
-        log('result :>> ', result);
         log('Atividades inseridas no processo');
     }
 }
@@ -303,7 +296,6 @@ exports.checkFileInfo = (req, res, next) => {
     const path = req.query.path;
 
     loadDocumentFileInfo(path, (result, error) => {
-        log('result :>> ', result);
         if (error) return res.status(500).send({
             ok: false,
             message: 'Erro ao tentar carregar o documento de informação!'
