@@ -353,16 +353,16 @@
 
                         const noMovement =
                             companyId in noMovements
-                                ? document in noMovements[companyId] &&
-                                  noMovements[companyId][document]
+                                ? document.name in noMovements[companyId] &&
+                                  noMovements[companyId][document.name]
                                     ? true
                                     : false
                                 : false
 
                         const hasfile =
                             companyId in documents
-                                ? document in documents[companyId] &&
-                                  documents[companyId][document].length > 0
+                                ? document.name in documents[companyId] &&
+                                  documents[companyId][document.name].length > 0
                                     ? true
                                     : false
                                 : false
@@ -417,7 +417,7 @@
                 formData.append('companyId', this.uploadModal.data.companyId)
                 formData.append(
                     'documentPath',
-                    this.uploadModal.data.documentPath.name
+                    this.uploadModal.data.documentPath
                 )
                 formData.append('period', this.getPeriodName(this.periodValue))
                 this.files.forEach((f, i) =>
