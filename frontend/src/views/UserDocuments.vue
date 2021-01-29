@@ -331,18 +331,18 @@ export default {
         const noMovements = this.noMovements
 
         userData.documents[type][companyId].forEach(document => {
-          const documentPath = document.split('/')
+          const documentPath = document.name.split('/')
           
           const noMovement = companyId in noMovements
-            ? document in noMovements[companyId]
-            && noMovements[companyId][document]
+            ? document.name in noMovements[companyId]
+            && noMovements[companyId][document.name]
               ? true
               : false
             : false
 
           const hasfile = companyId in documents 
-            ? document in documents[companyId] 
-            && documents[companyId][document].length > 0
+            ? document.name in documents[companyId] 
+            && documents[companyId][document.name].length > 0
               ? true
               : false
             : false
@@ -353,7 +353,7 @@ export default {
             companyCGCE: company[2],
             folder: documentPath[documentPath.length - 2],
             document: documentPath[documentPath.length - 1],
-            documentPath: document,
+            documentPath: document.name,
             hasfile,
             noMovement
           })

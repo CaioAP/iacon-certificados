@@ -15,7 +15,7 @@ const actions = {
     commit(USER_REQUEST)
     axios({ url: `http://${location.hostname}:2160/users` })
       .then(resp => {
-        console.log('resp.data :>> ', resp)
+        // console.log('resp.data :>> ', resp)
         commit(USER_SUCCESS, resp)
       })
       .catch(error => {

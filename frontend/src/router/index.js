@@ -35,9 +35,15 @@ const routes = [
     beforeEnter: (to, from, next) => ifAuthenticated(to, from, next)
   },
   {
-    path: '/novo-ususuario',
-    name: 'NewUser',
-    component: () => import('../views/NewUser.vue'),
+    path: '/usuario',
+    name: 'Usuario',
+    component: () => import('../views/Usuario.vue'),
+    beforeEnter: (to, from, next) => ifAuthenticated(to, from, next)
+  },
+  {
+    path: '/usuario/:username',
+    name: 'Usuario',
+    component: () => import('../views/Usuario.vue'),
     beforeEnter: (to, from, next) => ifAuthenticated(to, from, next)
   }
 ]

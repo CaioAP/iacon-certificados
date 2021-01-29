@@ -3,11 +3,11 @@
     <div class="nav-item">
       <img :src="logoSoma" class="logo" id="logo-soma" />
 
-      <router-link :to="{ name: 'Documentos', params: { userhash: 'qwerty' } }">
+      <router-link :to="{ name: 'Documentos' }">
         Documentos
       </router-link>
 
-      <router-link :to="{ name: 'NewUser' }">
+      <router-link :to="{ name: 'Usuario' }">
         Cadastro de Usuários
       </router-link>
     </div>

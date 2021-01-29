@@ -7,7 +7,8 @@
       :id="inputId"
       :placeholder="placeholder"
       :disabled="disabled"
-      v-model="value"
+      :value="value"
+      @input="$emit('input', $event.target.value)"
     />
     <span class="validation-message" v-show="!validated">{{
       validationMessage
@@ -44,7 +45,6 @@ module.exports = {
     },
     value: {
       type: String,
-      required: true
     },
     validator: {
       type: Function,
@@ -66,8 +66,7 @@ module.exports = {
   watch: {
     value() {
       this.validate()
-      this.$emit('input', this.value)
-    }
+    },
   },
   methods: {
     validate() {
@@ -89,12 +88,12 @@ module.exports = {
       }
     },
     setValidatedTrue() {
-      this.validated = true
-      this.$emit('validation', this.validated)
+      const validated = true
+      this.$emit('validation', validated)
     },
     setValidatedFalse() {
-      this.validated = false
-      this.$emit('validation', this.validated)
+      const validated = false
+      this.$emit('validation', validated)
     }
   }
 }

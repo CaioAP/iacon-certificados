@@ -33,10 +33,10 @@ export default {
   },
   computed: {
     isLoggedIn() {
-      console.log(
-        'this.$store.getters.isAuthenticated :>> ',
-        this.$store.getters.isAuthenticated
-      )
+      // console.log(
+      //   'this.$store.getters.isAuthenticated :>> ',
+      //   this.$store.getters.isAuthenticated
+      // )
       return this.$store.getters.isAuthenticated
     }
   },
@@ -76,7 +76,7 @@ div#app {
 
   input,
   select {
-    max-height: 30px;
+    max-height: 35px;
   }
 
   th,

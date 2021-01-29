@@ -8,6 +8,20 @@ const sassMiddleware = require('node-sass-middleware');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 
+const mongoose = require("mongoose");
+const url = "mongodb://localhost:27017/iacon";
+const mongoDB = process.env.MONGODB_URI || url;
+
+mongoose.connect(mongoDB, {
+  useNewUrlParser: true,
+  useFindAndModify: false,
+  useUnifiedTopology: true,
+});
+mongoose.Promise = global.Promise;
+
+const db = mongoose.connection;
+db.on("error", console.error.bind(console, "Erro na Ligação ao MongoDB"));
+
 const app = express();
 
 app.use(cors({
