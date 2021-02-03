@@ -16,6 +16,8 @@ router.post('/insert', [
 
 router.post('/edit', userController.edit);
 
+router.get('/pesquisar', userController.pesquisar);
+
 router.get('/files', docsUserController.getUserFiles);
 
 router.post('/documents', [

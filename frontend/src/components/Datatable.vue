@@ -32,6 +32,7 @@
                     small
                     striped
                     stacked="md"
+                    empty-text="Nenhum item carregado"
                     :ref="refId"
                     :items="data"
                     :fields="columns"
@@ -44,6 +45,9 @@
                     :sort-direction="sortDirection"
                     @filtered="onFiltered"
                 >
+                    <template #empty="scope">
+                        <p class="text-center my-2">{{ scope.emptyText }}</p>
+                    </template>
                     <template
                         v-slot:cell(actions)="row"
                         v-if="buttons.length > 0"

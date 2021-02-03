@@ -6,17 +6,23 @@ const UserSchema = new Schema({
   name: { type: String, required: true },
   email: { type: String, required: true },
   username: { type: String, required: true },
-  password: { type: String, required: true }
+  password: { type: String, required: true },
+  superId: { type: String, required: true }
 });
 
 const UserModel = mongoose.model("documentos_sub_usuarios", UserSchema);
 
-exports.checkExisting = async (filter) => {
+exports.checkExisting = async filter => {
   try {
     const query = { 
-      $or: [
-        { username: filter.username },
-        { email: filter.email }
+      $and: [
+        { superId: filter.superId },
+        { 
+          $or: [
+            { username: filter.username },
+            { email: filter.email }
+          ]
+        }
       ]
     };
     
@@ -25,26 +31,42 @@ exports.checkExisting = async (filter) => {
     return result;
   } catch (error) {
     console.error(error);
-
-    return error;
+    throw error;
   }
 }
 
-exports.insert = async (data) => {
+exports.insert = async data => {
   try {
     const User = new UserModel({
       name: data.name.toUpperCase(),
       email: data.email.toLowerCase(),
       username: data.username.toLowerCase(),
       password: md5(data.password),
+      superId: data.superId
     });
 
-    const result = await User.save();
+    await User.save();
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+exports.filter = async filter => {
+  try {
+    const query = {};
+    for (const key in filter) {
+      if (filter.hasOwnProperty(key)) {
+        query[key] = { $regex: filter[key] };
+      }
+    }
+    const select = { name: 1, email: 1, username: 1, _id: 1 };
+
+    const result = await UserModel.find(query).select(select).exec();
 
     return result;
   } catch (error) {
     console.error(error);
-
-    return null;
+    throw error;
   }
 }

@@ -432,7 +432,7 @@
                     data: formData,
                     headers: { 'Content-Type': 'multipart/form-data' },
                 })
-                    .then((response) => {
+                    .then(() => {
                         const companyId = parseInt(formData.get('companyId'))
                         const documentPath = formData.get('documentPath')
                         this.updateDocuments(formData)

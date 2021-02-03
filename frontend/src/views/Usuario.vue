@@ -8,7 +8,7 @@
     >
       <p class="alert-message">{{alert.message}}</p>
     </b-alert>
-    <Section title="Cadastro">
+    <Section title="Cadastro" class="mb-2">
       <Form justify="start">
         <form-input
           col-size="6"
@@ -58,7 +58,7 @@
           :validated="validation.password"
           @validation="(newVal) => {validation.password = newVal}"
         />
-        <div class="col-12 d-flex justify-content-center align-items-center">
+        <div class="col-12 mt-3 d-flex justify-content-center align-items-center">
           <button 
             type="submit" 
             class="btn btn-success"
@@ -69,19 +69,69 @@
         </div>
       </Form>
     </Section>
+    <Section title="Filtro">
+      <Form justify="start">
+        <div class="col-12 d-flex justify-content-end">
+          <button 
+            type="submit"
+            class="btn btn-primary"
+            @click="search"
+          >
+          <font-awesome-icon :icon="icons.faSearch" />
+            Pesquisar
+          </button>
+          </div>
+        <form-input
+          col-size="4"
+          input-type="text"
+          input-id="filter-name"
+          v-model="filter.name"
+          label-text="Nome"
+        ></form-input>
+        <form-input
+          col-size="4"
+          input-type="text"
+          input-id="filter-email"
+          v-model="filter.email"
+          label-text="E-mail"
+        ></form-input>
+        <form-input
+          col-size="4"
+          input-type="text"
+          input-id="filter-username"
+          v-model="filter.username"
+          label-text="Nome de usuário"
+        ></form-input>
+        
+        <datatable
+          :columns="table.columns"
+          :data="tabledata"
+          :buttons="table.actions"
+          ref-id="table-extra"
+          class="mt-4"
+        >
+        </datatable>
+      </Form>
+    </Section>
   </div>
 </template>
 
 <script>
+import axios from 'axios'
 import Section from '@/components/Section.vue'
 import Form from '@/components/Form.vue'
 import FormInput from '@/components/FormInput.vue'
-import axios from 'axios'
+import Datatable from '@/components/Datatable.vue'
+import {
+  faSearch,
+  faEdit
+} from '@fortawesome/free-solid-svg-icons'
 export default {
   components: {
     Section,
     Form,
-    FormInput
+    FormInput,
+    Datatable
   },
   data() {
     return {
@@ -91,11 +141,17 @@ export default {
         message: null
       },
       data: {
-        name: '',
-        email: '',
-        username: '',
-        password: ''
+        name: null,
+        email: null,
+        username: null,
+        password: null
       },
+      filter: {
+        name: null,
+        email: null,
+        username: null
+      },
+      tabledata: [],
       validators: {
         name(text) {
           return text.length > 0
@@ -116,7 +172,8 @@ export default {
         username: true,
         password: true,
       },
-      loading: false
+      loading: false,
+      superId: null
     }
   },
   computed: {
@@ -125,17 +182,89 @@ export default {
     },
     pageType() {
       return this.$route.params.username ? 'edit' : 'create'
+    },
+    icons() {
+      return {
+        faSearch
+      }
+    },
+    table() {
+      return {
+        columns: [
+          { key: 'name', label: 'Nome', sortable: true },
+          { key: 'email', label: 'E-mail', sortable: true },
+          { key: 'username', label: 'Nome de usuário', sortable: true },
+          {
+            key: 'actions',
+            label: 'Ação',
+            sortable: false,
+            tdClass: 'actions',
+          }
+        ],
+        actions: [
+          {
+            id: 'success p-1 btn-sm',
+            type: 'icon',
+            content: faEdit,
+            action: row => this.editUser(row),
+            title: 'Editar usuário',
+          }
+        ]
+      }
     }
   },
   methods: {
+    editUser(row) {
+      this.data = {
+        name: row.item.name,
+        email: row.item.email,
+        username: row.item.username,
+        password: ''
+      }
+    },
+
+    async search(event) {
+      if (event) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+
+      try {
+        let url = `${this.baseURL}/pesquisar?superId=${this.superId}`
+        if (this.filter.name)
+          url += `&name=${this.filter.name}`
+        if (this.filter.email)
+          url += `&email=${this.filter.email}`
+        if (this.filter.username)
+          url += `&username=${this.filter.username}`
+          
+        console.log('url :>> ', url);
+        var { data } = await axios.get(url)
+        this.tabledata = data.data
+        console.log('data :>> ', data)
+        
+      } catch (error) {
+        console.log(error.response.data)
+        const data = error.response.data
+
+        this.alert = {
+          countDown: 10,
+          type: 'danger',
+          message: data.message.join('\n')
+        }
+      }
+    },
 
     async save(event) {
       event.preventDefault()
       event.stopPropagation()
 
       try {
+        this.data.superId = this.superId
         const url = `${this.baseURL}/${this.pageType == 'create' ? 'insert' : 'edit'}`
         var { data } = await axios.post(url, this.data)
+
+        delete this.data.superId
 
         this.alert = {
           countDown: 10,
@@ -155,6 +284,8 @@ export default {
     }
   },
   mounted () {
+    this.superId = this.$store.getters.getUserdata._id
+    this.search()
   },
 }
 </script>
@@ -162,5 +293,9 @@ export default {
 <style scoped>
 .alert-message {
   margin-bottom: 0px;
+}
+#insert-section .col-6,
+#insert-section .col-4 {
+  margin-bottom: 8px;
 }
 </style>
