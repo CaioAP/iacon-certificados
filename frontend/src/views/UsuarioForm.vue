@@ -58,6 +58,32 @@
           :validated="validation.password"
           @validation="(newVal) => {validation.password = newVal}"
         />
+        <table-companies
+          ref="tableCompanies"
+          col-size="12"
+          selector-id="company-selector"
+          label="Empresas selecionadas"
+          :content="data.companies"
+          @content-change="(newContent) => {data.companies = newContent}" >
+        </table-companies>
+        <table-documents
+          ref="tableDocuments"
+          col-size="12"
+          selector-id="docs-selector"
+          label="Documentos selecionados"
+          :companies-content="data.companies"
+          @content-change="(newContent) => {data.documents = newContent}" >
+        </table-documents>
+        <!-- <div class="col-12">
+          <datatable
+            :columns="table.columns"
+            :data="tabledata"
+            :buttons="table.actions"
+            ref-id="table-extra"
+            class="mt-4"
+          >
+          </datatable>
+        </div> -->
         <div class="col-12 mt-3 d-flex justify-content-center align-items-center">
           <button 
             type="submit" 
@@ -69,50 +95,6 @@
         </div>
       </Form>
     </Section>
-    <Section title="Filtro">
-      <Form justify="start">
-        <div class="col-12 d-flex justify-content-end">
-          <button 
-            type="submit"
-            class="btn btn-primary"
-            @click="search"
-          >
-          <font-awesome-icon :icon="icons.faSearch" />
-            Pesquisar
-          </button>
-          </div>
-        <form-input
-          col-size="4"
-          input-type="text"
-          input-id="filter-name"
-          v-model="filter.name"
-          label-text="Nome"
-        ></form-input>
-        <form-input
-          col-size="4"
-          input-type="text"
-          input-id="filter-email"
-          v-model="filter.email"
-          label-text="E-mail"
-        ></form-input>
-        <form-input
-          col-size="4"
-          input-type="text"
-          input-id="filter-username"
-          v-model="filter.username"
-          label-text="Nome de usuário"
-        ></form-input>
-        
-        <datatable
-          :columns="table.columns"
-          :data="tabledata"
-          :buttons="table.actions"
-          ref-id="table-extra"
-          class="mt-4"
-        >
-        </datatable>
-      </Form>
-    </Section>
   </div>
 </template>
 
@@ -121,7 +103,8 @@ import axios from 'axios'
 import Section from '@/components/Section.vue'
 import Form from '@/components/Form.vue'
 import FormInput from '@/components/FormInput.vue'
-import Datatable from '@/components/Datatable.vue'
+import TableCompanies from '@/components/TableCompanies.vue'
+import TableDocuments from '@/components/TableDocuments.vue'
 import {
   faSearch,
   faEdit
@@ -131,7 +114,8 @@ export default {
     Section,
     Form,
     FormInput,
-    Datatable
+    TableCompanies,
+    TableDocuments
   },
   data() {
     return {
@@ -145,11 +129,6 @@ export default {
         email: null,
         username: null,
         password: null
-      },
-      filter: {
-        name: null,
-        email: null,
-        username: null
       },
       tabledata: [],
       validators: {
@@ -178,7 +157,7 @@ export default {
   },
   computed: {
     baseURL() {
-      return `http://${location.hostname}:2160/users`
+      return `${this.$root.serverURL}/users`
     },
     pageType() {
       return this.$route.params.username ? 'edit' : 'create'
@@ -223,38 +202,6 @@ export default {
       }
     },
 
-    async search(event) {
-      if (event) {
-        event.preventDefault()
-        event.stopPropagation()
-      }
-
-      try {
-        let url = `${this.baseURL}/pesquisar?superId=${this.superId}`
-        if (this.filter.name)
-          url += `&name=${this.filter.name}`
-        if (this.filter.email)
-          url += `&email=${this.filter.email}`
-        if (this.filter.username)
-          url += `&username=${this.filter.username}`
-          
-        console.log('url :>> ', url);
-        var { data } = await axios.get(url)
-        this.tabledata = data.data
-        console.log('data :>> ', data)
-        
-      } catch (error) {
-        console.log(error.response.data)
-        const data = error.response.data
-
-        this.alert = {
-          countDown: 10,
-          type: 'danger',
-          message: data.message.join('\n')
-        }
-      }
-    },
-
     async save(event) {
       event.preventDefault()
       event.stopPropagation()
@@ -285,7 +232,6 @@ export default {
   },
   mounted () {
     this.superId = this.$store.getters.getUserdata._id
-    this.search()
   },
 }
 </script>

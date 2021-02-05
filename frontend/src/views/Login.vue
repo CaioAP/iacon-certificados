@@ -58,17 +58,20 @@ export default {
   },
   methods: {
     login: function() {
+      console.log(`ta passando aqui`)
       const { username, password } = this
       this.$store
         .dispatch(AUTH_REQUEST, { username, password })
         .then(() => {
+          console.log(`ta passando aqui ok`)
           this.$router.push('/documentos')
         })
-        .catch(() => {
+        .catch((error) => {
+          console.log(error)
           this.alertLogin = true
         })
     }
-  }
+  },
 }
 </script>
 

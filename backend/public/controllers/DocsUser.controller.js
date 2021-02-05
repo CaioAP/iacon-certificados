@@ -42,6 +42,7 @@ const { saveMessage, getAllMessages } = require('../models/Messages.model');
 
 exports.authenticateUser = (req, res, next) => {
     findDocsUserByUsername(req.body.username, (userdata, err) => {
+        console.log('passou por aqui...');
         if (err)
             return res.status(500).send({
                 message: 'Erro ao tentar carregar o usuário pelo nome de usuário'

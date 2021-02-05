@@ -36,14 +36,20 @@ const routes = [
   },
   {
     path: '/usuario',
-    name: 'Usuario',
-    component: () => import('../views/Usuario.vue'),
+    name: 'ListarUsuarios',
+    component: () => import('../views/UsuarioIndex.vue'),
     beforeEnter: (to, from, next) => ifAuthenticated(to, from, next)
   },
   {
-    path: '/usuario/:username',
+    path: '/usuario/form',
     name: 'Usuario',
-    component: () => import('../views/Usuario.vue'),
+    component: () => import('../views/UsuarioForm.vue'),
+    beforeEnter: (to, from, next) => ifAuthenticated(to, from, next)
+  },
+  {
+    path: '/usuario/form/:username',
+    name: 'EditarUsuario',
+    component: () => import('../views/UsuarioForm.vue'),
     beforeEnter: (to, from, next) => ifAuthenticated(to, from, next)
   }
 ]

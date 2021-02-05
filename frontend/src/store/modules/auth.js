@@ -8,6 +8,8 @@ import { USER_REQUEST } from '../actions/user'
 import axios from 'axios'
 import router from '../../router/index'
 
+const serverURL = `${location.protocol}//${location.hostname}:2160`
+
 const state = {
   token: localStorage.getItem('user-token') || '',
   status: '',
@@ -26,7 +28,7 @@ const actions = {
     return new Promise((resolve, reject) => {
       commit(AUTH_REQUEST)
       axios({
-        url: `http://${location.hostname}:2160/users/auth`,
+        url: `${serverURL}/users/auth`,
         data: user,
         method: 'POST'
       })

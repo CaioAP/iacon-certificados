@@ -7,10 +7,12 @@ const UserSchema = new Schema({
   email: { type: String, required: true },
   username: { type: String, required: true },
   password: { type: String, required: true },
-  superId: { type: String, required: true }
+  superId: { type: String, required: true },
+  companies: { type: Array, default: () => new Array() },
+  documents: { type: Object, default: () => new Object() }
 });
 
-const UserModel = mongoose.model("documentos_sub_usuarios", UserSchema);
+const UserModel = mongoose.model("documentos_usuarios", UserSchema);
 
 exports.checkExisting = async filter => {
   try {
@@ -42,7 +44,8 @@ exports.insert = async data => {
       email: data.email.toLowerCase(),
       username: data.username.toLowerCase(),
       password: md5(data.password),
-      superId: data.superId
+      superId: data.superId,
+      companies: []
     });
 
     await User.save();

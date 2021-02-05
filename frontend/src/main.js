@@ -20,8 +20,15 @@ if (token) {
   axios.defaults.headers.common['Authorization'] = token
 }
 
+const serverURL = `${location.protocol}//${location.hostname}:2160`
+
 new Vue({
   router,
   store,
-  render: h => h(App)
+  render: h => h(App),
+  computed: {
+    serverURL() {
+      return serverURL
+    }
+  }
 }).$mount('#app')
