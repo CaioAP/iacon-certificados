@@ -4,14 +4,16 @@ import router from './router'
 import store from './store'
 import './styles.scss'
 import axios from 'axios'
+import VueMeta from 'vue-meta';
 import { BootstrapVue } from 'bootstrap-vue'
 // import { library } from '@fortawesome/fontawesome-svg-core'
 // import { faUserSecret } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 // library.add(faUserSecret)
-Vue.component('font-awesome-icon', FontAwesomeIcon)
-Vue.use(BootstrapVue)
+Vue.component('font-awesome-icon', FontAwesomeIcon);
+Vue.use(BootstrapVue);
+Vue.use(VueMeta);
 
 Vue.config.productionTip = false
 
