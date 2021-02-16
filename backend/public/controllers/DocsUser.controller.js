@@ -41,11 +41,6 @@ const {
 const { saveMessage, getAllMessages } = require('../models/Messages.model');
 
 exports.authenticateUser = (req, res, next) => {
-
-    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    console.log("!!!              Oioioi                !!!")
-    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-
     findDocsUserByUsername(req.body.username, (userdata, err) => {
         console.log('passou por aqui...');
         if (err)
