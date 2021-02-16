@@ -41,6 +41,10 @@ const {
 const { saveMessage, getAllMessages } = require('../models/Messages.model');
 
 exports.authenticateUser = (req, res, next) => {
+    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    console.log("!!!              Oioioi                !!!");
+    console.log(req.body);
+    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     findDocsUserByUsername(req.body.username, (userdata, err) => {
         console.log('passou por aqui...');
         if (err)
@@ -48,6 +52,9 @@ exports.authenticateUser = (req, res, next) => {
                 message: 'Erro ao tentar carregar o usuário pelo nome de usuário'
             });
 
+            console.log(userdata);
+            console.log(`req.body.password = ${req.body.password}`);
+            console.log(`userdata.password = ${userdata.password}`);
         if (userdata && md5(req.body.password) === userdata.password) {
             const id = userdata._id;
             const token = jwt.sign({ id }, process.env.SECRET, {

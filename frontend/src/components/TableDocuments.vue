@@ -108,7 +108,8 @@ export default {
       this.$emit('content-change', this.table.contents)
     },
     getCompaniesFolders(companies) {
-      axios.get('/empresas/folders?companies=' + companies.join(','))
+      const url = this.$root.serverURL
+      axios.get(url + '/empresas/folders?companies=' + companies.join(','))
         .then(response => {
           this.data = response.data
         })
