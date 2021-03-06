@@ -7,7 +7,8 @@ const UserSchema = new Schema({
   email: { type: String, required: true },
   username: { type: String, required: true },
   password: { type: String, required: true },
-  superId: { type: String, required: true },
+  phone: { type: String },
+  superId: { type: String },
   companies: { type: Array, default: () => new Array() },
   documents: { type: Object, default: () => new Object() }
 });
@@ -44,8 +45,10 @@ exports.insert = async data => {
       email: data.email.toLowerCase(),
       username: data.username.toLowerCase(),
       password: md5(data.password),
+      phone: data.phone,
       superId: data.superId,
-      companies: []
+      companies: [],
+      documents: {}
     });
 
     await User.save();

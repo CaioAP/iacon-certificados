@@ -41,6 +41,7 @@ const {
 const { saveMessage, getAllMessages } = require('../models/Messages.model');
 
 exports.authenticateUser = (req, res, next) => {
+    console.log(`req.body.username = ${req.body.username}`);
     findDocsUserByUsername(req.body.username, (userdata, err) => {
         console.log('passou por aqui...');
         if (err)
@@ -49,6 +50,7 @@ exports.authenticateUser = (req, res, next) => {
             });
 
             console.log(userdata);
+            console.log(`req.body.username = ${req.body.username}`);
             console.log(`req.body.password = ${req.body.password}`);
             console.log(`userdata.password = ${userdata.password}`);
 

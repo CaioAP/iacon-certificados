@@ -64,7 +64,9 @@
           selector-id="company-selector"
           label="Empresas selecionadas"
           :content="data.companies"
-          @content-change="(newContent) => {data.companies = newContent}" >
+          @content-change="(newContent) => {data.companies = newContent}" 
+          :filter-companies="superUserCompanies"
+        >
         </table-companies>
         <table-documents
           ref="tableDocuments"
@@ -74,16 +76,6 @@
           :companies-content="data.companies"
           @content-change="(newContent) => {data.documents = newContent}" >
         </table-documents>
-        <!-- <div class="col-12">
-          <datatable
-            :columns="table.columns"
-            :data="tabledata"
-            :buttons="table.actions"
-            ref-id="table-extra"
-            class="mt-4"
-          >
-          </datatable>
-        </div> -->
         <div class="col-12 mt-3 d-flex justify-content-center align-items-center">
           <button 
             type="submit" 
@@ -151,6 +143,7 @@ export default {
         username: true,
         password: true,
       },
+      superUserCompanies: [],
       loading: false,
       superId: null
     }
@@ -193,6 +186,16 @@ export default {
     }
   },
   methods: {
+    loadSuperUserCompanies() {
+      try {
+        const url = `${this.baseURL}/carregar-usuario-empresas?id=${this.superId}`
+        const { data } = await axios.get(url)
+
+      } catch (error) {
+        console.error(error)
+      }
+    },
+
     editUser(row) {
       this.data = {
         name: row.item.name,
@@ -230,8 +233,11 @@ export default {
       }
     }
   },
-  mounted () {
+  created () {
     this.superId = this.$store.getters.getUserdata._id
+    this.loadSuperUserCompanies()
+  },
+  mounted () {
   },
 }
 </script>

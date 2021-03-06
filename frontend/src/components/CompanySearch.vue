@@ -119,6 +119,10 @@ export default {
       type: Number,
       default: null,
     },
+    filterIds: {
+      type: Array,
+      default: () => []
+    }
   },
   computed: {
     table() {
@@ -215,9 +219,12 @@ export default {
       )
     },
     loadCompaniesTableData() {
-      const url = this.$root.serverURL
-      axios
-        .get(url + '/empresas')
+      let query = ''
+      if (this.filterIds.length) query = this.filterIds.join(',')
+
+      const url = `${this.$root.serverURL}?companies=${query}`
+      console.log(url)
+      axios.get(url + '/empresas')
         .then((response) => {
           this.companies = response.data
           this.filtered = response.data

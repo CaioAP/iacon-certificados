@@ -2,8 +2,11 @@ const EmpresasModel = require('../models/Empresas.model');
 
 exports.getEmpresas = async (req, res, next) => {
     try {
-        console.error.log(req.query);
-        console.error.log(req.params);
+        let filter = '';
+        if (req.query.companies)
+            filter = req.query.companies.split(',');
+        
+        console.log(filter);
 
         const empresas = await EmpresasModel.filter([]);
 

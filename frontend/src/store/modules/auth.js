@@ -25,8 +25,9 @@ const getters = {
 
 const actions = {
     [AUTH_REQUEST]: ({ commit, dispatch }, user) => {
+        console.log("Ixiiiiiiiiii");
+        commit(AUTH_REQUEST);
         return new Promise((resolve, reject) => {
-            commit(AUTH_REQUEST)
             axios({
                 url: `http://${location.hostname}:2160/users/auth`,
                 data: user,
