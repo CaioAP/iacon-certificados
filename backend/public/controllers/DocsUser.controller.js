@@ -42,23 +42,34 @@ const { saveMessage, getAllMessages } = require('../models/Messages.model');
 
 exports.authenticateUser = (req, res, next) => {
     findDocsUserByUsername(req.body.username, (userdata, err) => {
-        console.log('passou por aqui...');
-        if (err)
+        if (err) {
+            console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            console.log('Erro ao tentar carregar o usuário pelo nome de usuário');
+            console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             return res.status(500).send({
                 message: 'Erro ao tentar carregar o usuário pelo nome de usuário'
             });
+        }
 
-            console.log(userdata);
+        if (userdata == null) {
+            console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            console.log(req.body.username)
+            console.log('Usuário não cadastrado!');
+            console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            return res.status(401).send({ message: 'Usuário não cadastrado!' });
+        } else {
+            console.log(`req.body.username = ${req.body.username}`);
             console.log(`req.body.password = ${req.body.password}`);
             console.log(`userdata.password = ${userdata.password}`);
 
-        if (userdata && md5(req.body.password) === userdata.password) {
-            const id = userdata._id;
-            const token = jwt.sign({ id }, process.env.SECRET, {
-                expiresIn: 3600
-            });
+            if (userdata && md5(req.body.password) === userdata.password) {
+                const id = userdata._id;
+                const token = jwt.sign({ id }, process.env.SECRET, {
+                    expiresIn: 3600
+                });
 
-            return res.status(200).send({ token: token });
+                return res.status(200).send({ token: token });
+            }
         }
 
         res.status(401).send({ message: 'Login inválido!' })
@@ -120,6 +131,8 @@ exports.handleFormData = (req, res, next) => {
         }
 
         const filePath = path.join(folderPath, fileName);
+        log(`Gravando arquivo em:`);
+        log(`    ${filePath}`);
         file.pipe(fs.createWriteStream(filePath));
 
         const fileNameParts = fileName.split('.')
@@ -155,8 +168,7 @@ exports.saveFileData = (req, res, next) => {
         if (!result) {
             log("    Nenhum arquivo. Criar todos")
             createDocumentsFiles(formData);
-        }
-        else {
+        } else {
             log("    Arquivos pré existentes. Atualizar lista")
             const files = formData.get('files');
 
@@ -189,9 +201,10 @@ const findResponsibleInDepartment = (responsibles, respUser, respFound = false) 
     return respFound
 }
 
-exports.createDocumentActivity = async (req, res, next) => {
+exports.createDocumentActivity = async(req, res, next) => {
     const formData = req.body.formData;
     const companyId = formData.get('companyId');
+    log(`Criando atividade de upload de arquivo da empresa ${companyId}`);
     const companyData = await getCompanyByCodigo(companyId);
     const departments = await getAllDepartments();
 

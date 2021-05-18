@@ -425,7 +425,7 @@
                 )
                 // console.log('formData.getAll("files") :>> ', formData.getAll('files'))
 
-                const self = this
+                const self = this;
                 axios({
                     method: 'post',
                     url: `http://${location.hostname}:2160/users/documents`,
@@ -608,7 +608,8 @@
                         `http://${location.hostname}:2160/users/message?companyId=${row.item.companyId}&period=${this.periodValue}&documentPath=${row.item.documentPath}`
                     )
                     .then((response) => {
-                        const messageModal = this.messageModal
+                        const messageModal = this.messageModal;
+                        console.log(response.data);
                         response.data.result.forEach((message) => {
                             message.datetime = new Date(message.datetime)
                             message.myMessage =

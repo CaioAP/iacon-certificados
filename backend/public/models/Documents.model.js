@@ -3,7 +3,7 @@ const mongoURL = 'mongodb://localhost:27017/';
 const mongoOptions = { useUnifiedTopology: true };
 const log = require("debug")("iacon:Documents.controller");
 
-exports.checkIfDocumentsFilesExists = async (data, callback) => {
+exports.checkIfDocumentsFilesExists = async(data, callback) => {
     log("Verificando se existem documentos");
     MongoClient.connect(mongoURL, mongoOptions, (err, db) => {
         if (err) throw err;
@@ -22,7 +22,7 @@ exports.checkIfDocumentsFilesExists = async (data, callback) => {
             .then(result => {
                 db.close();
                 if (result) {
-                    log(`    ${result.files.length} documentos encontrados.`);
+                    log(`    ${(result.files) ? result.files.length : 0} documentos encontrados.`);
                 } else {
                     log(`    Nenhum documento encontrado.`);
                 }
@@ -127,22 +127,22 @@ exports.findFilesByCompanyId = (data, callback) => {
         const noMovements = {};
 
         cursor.forEach(document => {
-            if (!(document.companyId in files))
-                files[document.companyId] = {};
-            if (!(document.companyId in noMovements))
-                noMovements[document.companyId] = {};
+                if (!(document.companyId in files))
+                    files[document.companyId] = {};
+                if (!(document.companyId in noMovements))
+                    noMovements[document.companyId] = {};
 
-            files[document.companyId][document.documentPath] = [];
-            noMovements[document.companyId][document.documentPath] = document.noMovement;
+                files[document.companyId][document.documentPath] = [];
+                noMovements[document.companyId][document.documentPath] = document.noMovement;
 
-            if ('files' in document) {
-                document.files.forEach(file => {
-                    files[document.companyId][document.documentPath].push(file.fileName)
-                });
-            }
-        }).then(() => {
-            callback({ files, noMovements });
-        })
+                if ('files' in document) {
+                    document.files.forEach(file => {
+                        files[document.companyId][document.documentPath].push(file.fileName)
+                    });
+                }
+            }).then(() => {
+                callback({ files, noMovements });
+            })
             .catch(error => {
                 console.error(error);
                 callback(null, error);

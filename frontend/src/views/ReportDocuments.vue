@@ -132,60 +132,60 @@ export default {
       ]
     },
     tableActions() {
-      return [
-        {
-          id: 'hasfile',
-          type: 'icon',
-          content: faFolderOpen,
-          action: row => console.log(row),
-          title: 'Esta pasta contém arquivos',
-          disabled: true
-        },
-        {
-          id: 'upload',
-          type: 'icon',
-          content: faCloudUploadAlt,
-          action: this.showUploadModal,
-          title: 'Clique aqui para subir os arquivos'
-        },
-        {
-          id: 'protocol',
-          type: 'icon',
-          content: faClipboardList,
-          action: () => {},
-          title: 'Clique aqui para visualizar o protocolo dos arquivos'
-        },
-        {
-          id: 'comment',
-          type: 'icon',
-          content: faCommentDots,
-          action: () => {},
-          title: 'Clique aqui para escrever uma mensagem'
-        },
-        {
-          id: 'info',
-          type: 'icon',
-          content: faInfoCircle,
-          action: this.showInfoFile,
-          title: 'Clique aqui para ver o arquivo de informação'
-        },
-        {
-          id: 'archive',
-          type: 'icon',
-          content: faArchive,
-          contentSelected: 0,
-          action: this.setFolderNoMovement,
-          title: 'Clique para selecionar esta pasta sem movimento'
-        },
-        {
-          id: 'unarchive',
-          type: 'icon',
-          content: faCheck,
-          contentSelected: 0,
-          action: this.setFolderNoMovement,
-          title: 'Clique para selecionar esta pasta com movimento'
-        }
-      ]
+        return [
+            {
+                id: 'hasfile',
+                type: 'icon',
+                content: faFolderOpen,
+                action: row => console.log(row),
+                title: 'Esta pasta contém arquivos',
+                disabled: true
+            },
+            {
+                id: 'upload',
+                type: 'icon',
+                content: faCloudUploadAlt,
+                action: this.showUploadModal,
+                title: 'Clique aqui para subir os arquivos'
+            },
+            {
+                id: 'protocol',
+                type: 'icon',
+                content: faClipboardList,
+                action: () => {},
+                title: 'Clique aqui para visualizar o protocolo dos arquivos'
+            },
+            {
+                id: 'comment',
+                type: 'icon',
+                content: faCommentDots,
+                action: () => {},
+                title: 'Clique aqui para escrever uma mensagem'
+            },
+            {
+                id: 'info',
+                type: 'icon',
+                content: faInfoCircle,
+                action: this.showInfoFile,
+                title: 'Clique aqui para ver o arquivo de informação'
+            },
+            {
+                id: 'archive',
+                type: 'icon',
+                content: faArchive,
+                contentSelected: 0,
+                action: this.setFolderNoMovement,
+                title: 'Clique para selecionar esta pasta sem movimento'
+            },
+            {
+                id: 'unarchive',
+                type: 'icon',
+                content: faCheck,
+                contentSelected: 0,
+                action: this.setFolderNoMovement,
+                title: 'Clique para selecionar esta pasta com movimento'
+            }
+        ]
     },
     periodOptions() {
       const currentDate = new Date()
