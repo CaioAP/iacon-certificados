@@ -41,23 +41,18 @@ const {
 const { saveMessage, getAllMessages } = require('../models/Messages.model');
 
 exports.authenticateUser = (req, res, next) => {
+    console.log(`req.body.username = ${req.body.username}`);
     findDocsUserByUsername(req.body.username, (userdata, err) => {
-        if (err) {
-            console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            console.log('Erro ao tentar carregar o usuário pelo nome de usuário');
-            console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            return res.status(500).send({
-                message: 'Erro ao tentar carregar o usuário pelo nome de usuário'
-            });
-        }
+            if (err) {
+                console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                console.log('Erro ao tentar carregar o usuário pelo nome de usuário');
+                console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                return res.status(500).send({
+                    message: 'Erro ao tentar carregar o usuário pelo nome de usuário'
+                });
+            }
 
-        if (userdata == null) {
-            console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            console.log(req.body.username)
-            console.log('Usuário não cadastrado!');
-            console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            return res.status(401).send({ message: 'Usuário não cadastrado!' });
-        } else {
+            console.log(userdata);
             console.log(`req.body.username = ${req.body.username}`);
             console.log(`req.body.password = ${req.body.password}`);
             console.log(`userdata.password = ${userdata.password}`);

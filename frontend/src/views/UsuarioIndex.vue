@@ -72,6 +72,10 @@ export default {
     }
   },
   computed: {
+    baseURL() {
+      return `${this.$root.serverURL}/users`
+    },
+    
     table() {
       return {
         columns: [

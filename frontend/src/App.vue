@@ -48,7 +48,7 @@ export default {
         title: 'Iacon Documentos',
         meta: [
             {
-                name: 'descrition',
+                name: 'description',
                 content:
                     'Seja bem-vindo à Soma Contabilidades! Para facilitar cada vez mais o processo de entrega de documentos, criamos uma plataforma que centralizará a troca de informações entre nós Contabilidade e você, nosso cliente. Com ela, você poderá anexar todos os arquivos necessários para a realização dos fechamentos contábeis e receber relatórios e resultados.',
             },

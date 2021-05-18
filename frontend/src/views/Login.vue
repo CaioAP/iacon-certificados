@@ -58,8 +58,9 @@ export default {
   },
   methods: {
     login: function() {
-      console.log(`ta passando aqui`)
-      const { username, password } = this
+      console.log(`ta passando aqui`);
+      console.log(AUTH_REQUEST);
+      const { username, password } = this;
       this.$store
         .dispatch(AUTH_REQUEST, { username, password })
         .then(() => {

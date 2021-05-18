@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 const UsersModel = require("../models/Users.model");
 
 exports.validate = (req, res, next) => {
@@ -79,6 +80,21 @@ exports.pesquisar = async (req, res, next) => {
       message: ['Usuários retornados com sucesso!'],
       data: result
     })
+  } catch (error) {
+    console.error(error);
+
+    return res.status(400).send({
+      success: false,
+      message: [error]
+    })
+  }
+}
+
+exports.carregarEmpresas = async (req, res, next) => {
+  try {
+    const usuarios = await UsersModel.filter({_id: ObjectId(this.query.id)});
+    const usuario = usuarios[0];
+
   } catch (error) {
     console.error(error);
 

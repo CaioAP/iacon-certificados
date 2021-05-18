@@ -17,6 +17,7 @@
       :selected-companies="table.contentsListObj"
       @selection="(newVal) => {data = newVal}"
       :remove="elementRemoved !== null ? elementRemoved[0] : null"
+      :filter-ids="filterCompanies"
     ></company-search>
   </div>
 </template>
@@ -43,6 +44,10 @@ export default {
       default: ''
     },
     content: {
+      type: Array,
+      default: () => []
+    },
+    filterCompanies: {
       type: Array,
       default: () => []
     }
