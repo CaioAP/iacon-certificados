@@ -38,7 +38,7 @@ router.post('/message', docsUserController.setMessage);
 
 router.post('/carregar-usuario-empresas', [
   userController.carregarEmpresas,
-  userController.validarEmpresas
+  // userController.validarEmpresas
 ]);
 
 module.exports = router;

@@ -186,7 +186,7 @@ export default {
     }
   },
   methods: {
-    loadSuperUserCompanies() {
+    loadSuperUserCompanies: async () => {
       try {
         const url = `${this.baseURL}/carregar-usuario-empresas?id=${this.superId}`
         const { data } = await axios.get(url)

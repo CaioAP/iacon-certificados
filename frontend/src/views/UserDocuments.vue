@@ -153,6 +153,7 @@
     import Datatable from '@/components/Datatable.vue'
     import UploadFiles from '@/components/UploadFiles.vue'
     import MessageCard from '@/components/MessageCard.vue'
+    import Swal from 'sweetalert2'
     import {
         faCloudUploadAlt,
         faClipboardList,
@@ -204,7 +205,7 @@
                     faArchive,
                     faCheck,
                     faPaperPlane,
-                },
+                }
             }
         },
         watch: {
@@ -294,7 +295,16 @@
             },
             periodOptions() {
                 const currentDate = new Date()
-                const options = []
+                
+                const options = [
+                    {
+                        key: 0,
+                        value: '',
+                        name: 'Selecionar período',
+                        disabled: true,
+                    }
+                ]
+
                 for (let i = 1; i <= 12; i++) {
                     options.push({
                         key: i,
@@ -668,8 +678,12 @@
         },
         created() {},
         mounted() {
+            Swal.fire({
+                title: 'Selecione o período que deseja enviar os arquivos'
+            })
+
             this.checkForUserData()
-            this.periodValue = this.getCurrentPeriod()
+            // this.periodValue = this.getCurrentPeriod()
         },
         components: {
             Section,
@@ -780,5 +794,9 @@
                 color: #276485;
             }
         }
+    }
+
+    h2.swal2-title{
+        font-size: 20px!important;
     }
 </style>

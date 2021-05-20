@@ -122,6 +122,7 @@ exports.findFilesByCompanyId = (data, callback) => {
             companyId: { $in: data.companyIds },
             period: data.period
         };
+        console.log(query);
         const cursor = dbo.collection('documentos_files').find(query);
         const files = {};
         const noMovements = {};

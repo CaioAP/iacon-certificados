@@ -65,7 +65,6 @@ exports.authenticateUser = (req, res, next) => {
 
                 return res.status(200).send({ token: token });
             }
-        }
 
         res.status(401).send({ message: 'Login inválido!' })
     });
