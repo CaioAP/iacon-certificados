@@ -1,11 +1,12 @@
-require('dotenv-safe').config();
 const fs = require('fs');
 const md5 = require('md5');
 const path = require('path');
 const Busboy = require('busboy');
 const jwt = require('jsonwebtoken');
 const log = require("debug")("iacon:DocsUser.controller");
-const docsConfig = require('../config/Documents.config.json');
+const docsConfig = {
+    path: process.env.STORAGE_PATH
+}
 const {
     formatPeriodMMAAAA,
     unformatPeriodAAAAMM
@@ -43,28 +44,28 @@ const { saveMessage, getAllMessages } = require('../models/Messages.model');
 exports.authenticateUser = (req, res, next) => {
     console.log(`req.body.username = ${req.body.username}`);
     findDocsUserByUsername(req.body.username, (userdata, err) => {
-            if (err) {
-                console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                console.log('Erro ao tentar carregar o usuário pelo nome de usuário');
-                console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                return res.status(500).send({
-                    message: 'Erro ao tentar carregar o usuário pelo nome de usuário'
-                });
-            }
+        if (err) {
+            console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            console.log('Erro ao tentar carregar o usuário pelo nome de usuário');
+            console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            return res.status(500).send({
+                message: 'Erro ao tentar carregar o usuário pelo nome de usuário'
+            });
+        }
 
-            console.log(userdata);
-            console.log(`req.body.username = ${req.body.username}`);
-            console.log(`req.body.password = ${req.body.password}`);
-            console.log(`userdata.password = ${userdata.password}`);
+        console.log(userdata);
+        console.log(`req.body.username = ${req.body.username}`);
+        console.log(`req.body.password = ${req.body.password}`);
+        console.log(`userdata.password = ${userdata.password}`);
 
-            if (userdata && md5(req.body.password) === userdata.password) {
-                const id = userdata._id;
-                const token = jwt.sign({ id }, process.env.SECRET, {
-                    expiresIn: 3600
-                });
+        if (userdata && md5(req.body.password) === userdata.password) {
+            const id = userdata._id;
+            const token = jwt.sign({ id }, process.env.SECRET, {
+                expiresIn: 3600
+            });
 
-                return res.status(200).send({ token: token });
-            }
+            return res.status(200).send({ token: token });
+        }
 
         res.status(401).send({ message: 'Login inválido!' })
     });
@@ -124,7 +125,18 @@ exports.handleFormData = (req, res, next) => {
             fs.mkdirSync(folderPath, { recursive: true });
         }
 
-        const filePath = path.join(folderPath, fileName);
+        let filePath = path.join(folderPath, fileName);
+        let original_name = fileName;
+        console.log(filePath);
+        let counter = 0;
+        while (fs.existsSync(filePath)) {
+            counter += 1;
+            let parts = original_name.split(".");
+            let ext = parts.pop();
+            let basename = parts.join(".");
+            fileName = `${basename} ${counter}.${ext}`;
+            filePath = path.join(folderPath, fileName);
+        }
         log(`Gravando arquivo em:`);
         log(`    ${filePath}`);
         file.pipe(fs.createWriteStream(filePath));
