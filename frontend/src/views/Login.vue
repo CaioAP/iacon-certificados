@@ -1,129 +1,121 @@
 <template>
-  <div class="d-flex justify-content-center">
-    <img class="bg-image" :src="backgroundImage" alt="" />
-    <form class="login" @submit.prevent="login">
-      <img class="logo-image" :src="logoImage" alt="" />
-      <div class="form-group">
-        <label for="input-username">Usuário</label>
-        <input
-          type="text"
-          id="input-username"
-          class="form-control"
-          v-model="username"
-          placeholder="Nome de usuário"
-          required
+  <section class="page">
+    <validation-observer
+      ref="formulario"
+      v-slot="{ validate, invalid }"
+      tag="div"
+      class="form-login"
+    >
+      <form class="login" @submit.prevent="validate().then(login)">
+        <img class="logo-image" :src="logoImage" alt="" />
+        <div class="form-inputs">
+          <form-input
+            v-model="username"
+            label="Usuário"
+            placeholder="E-mail ou cnpj"
+            required
+          />
+          <form-input
+            v-model="password"
+            label="Senha"
+            placeholder="Senha"
+            type="password"
+            required
+          />
+        </div>
+        <form-button
+          type="submit"
+          variant="success"
+          class="btn-login"
+          name="Entrar"
+          :disabled="loading || invalid"
         />
-      </div>
-      <div class="form-group">
-        <label for="password">Senha</label>
-        <input
-          type="password"
-          id="input-password"
-          class="form-control"
-          v-model="password"
-          placeholder="Senha"
-          required
-        />
-      </div>
-      <button type="submit" id="btn-login" class="btn btn-success btn-login">Login</button>
-      <b-alert v-model="alertLogin" variant="danger" dismissible>
-        Erro ao tentar logar!
-      </b-alert>
-    </form>
-    <img class="logo-bottom" :src="logoBottom" alt="" />
-  </div>
+      </form>
+    </validation-observer>
+    <b-alert
+      class="alerta-login"
+      :show="alert.visible"
+      :variant="alert.type"
+      dismissible
+      >{{ alert.message }}</b-alert
+    >
+  </section>
 </template>
 
 <script>
 import { AUTH_REQUEST } from '../store/actions/auth'
 export default {
   name: 'login',
+  components: {
+    FormInput: () => import('@/components/Forms/FormInput.vue'),
+    FormButton: () => import('@/components/Forms/FormButton.vue')
+  },
   data() {
     return {
-      username: '',
-      password: '',
-      alertLogin: false
+      username: null,
+      password: null,
+      alert: {
+        visible: false,
+        message: '',
+        type: 'danger'
+      },
+      loading: false
     }
   },
   computed: {
-    backgroundImage() {
-      return require('@/assets/login-background.png')
-    },
     logoImage() {
-      return require('@/assets/logo-soma.png')
-    },
-    logoBottom() {
-      return require('@/assets/logo-gs.png')
+      return require('@/assets/logo-iacon.png')
     }
   },
   methods: {
-    login: function() {
-      console.log(`ta passando aqui`);
-      console.log(AUTH_REQUEST);
-      const { username, password } = this;
-      this.$store
-        .dispatch(AUTH_REQUEST, { username, password })
-        .then(() => {
-          console.log(`ta passando aqui ok`)
-          this.$router.push('/documentos')
-        })
-        .catch((error) => {
-          console.log(error)
-          this.alertLogin = true
-        })
+    async login() {
+      const { username, password } = this
+      await this.$store.dispatch(AUTH_REQUEST, { username, password })
+      this.$router.push('/')
     }
-  },
+  }
 }
 </script>
 
 <style lang="scss" scoped>
-.bg-image {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
+.page {
+  height: 100vh;
+  display: grid;
   z-index: -1;
-}
-.logo-image {
-  width: 100%;
-}
-.logo-bottom {
-  position: absolute;
-  bottom: 3vh;
-  max-width: 6vw;
-}
-.login {
-  display: flex;
-  flex-direction: column;
-  width: 400px;
-  padding: 10px;
-  color: #fff;
-  position: absolute;
-  left: calc(50vw - 200px);
 
-  .form-group {
-    input.form-control {
-      box-shadow: 0px 1px 2px 0px #00000088 !important;
+  & * {
+    z-index: 1;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url(../assets/login-background.jpg);
+    background-size: cover;
+    filter: brightness(0.8);
+  }
+
+  .login {
+    display: grid;
+    place-items: center;
+    color: #fff;
+    gap: 1rem;
+    margin-top: 5rem;
+
+    & * {
+      width: 100%;
     }
-    input.form-control:focus {
-      transform: translateY(-1px);
-      border: 1px solid #007bff;
-      box-shadow: 0px 2px 4px 1px #00000088 !important;
+
+    .logo-image {
+      max-width: 600px;
+      margin-bottom: 4rem;
     }
-  }
 
-  .form-group:last-of-type {
-    margin-bottom: 32px;
-  }
-
-  button#btn-login {
-    margin-bottom: 24px;
-    box-shadow: 0px 1px 2px 0px #000000 !important;
-  }
-  button#btn-login:hover {
-    transform: translateY(-1px);
-    box-shadow: 0px 2px 4px 1px #000000 !important;
+    .form-inputs,
+    .btn-login {
+      max-width: 400px;
+    }
   }
 }
 </style>

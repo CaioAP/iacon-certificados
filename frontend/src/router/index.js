@@ -1,22 +1,13 @@
 import Vue from 'vue'
 import store from '../store/index'
 import VueRouter from 'vue-router'
-// import UserDocuments from '../views/UserDocuments.vue'
 
-const ifNotAuthenticated = (to, from, next) => {
-  if (!store.getters.isAuthenticated) {
-    next()
-    return
-  }
-  next()
-}
-
-const ifAuthenticated = (to, from, next) => {
+const isAuthenticated = () => {
   if (store.getters.isAuthenticated) {
-    next()
-    return
+    return true
   }
-  next('/login')
+
+  return false
 }
 
 Vue.use(VueRouter)
@@ -25,33 +16,47 @@ const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('../views/Login.vue'),
-    beforeEnter: (to, from, next) => ifNotAuthenticated(to, from, next)
+    component: () => import('../views/Login.vue')
   },
   {
-    path: '/documentos',
-    name: 'Documentos',
-    component: () => import('../views/UserDocuments.vue'),
-    beforeEnter: (to, from, next) => ifAuthenticated(to, from, next)
+    path: '/',
+    name: 'Index',
+    component: () => import('../views/Index.vue')
   },
   {
-    path: '/usuario',
-    name: 'ListarUsuarios',
-    component: () => import('../views/UsuarioIndex.vue'),
-    beforeEnter: (to, from, next) => ifAuthenticated(to, from, next)
+    path: '/register',
+    name: 'Register',
+    component: () => import('../views/Register.vue')
   },
   {
-    path: '/usuario/form',
-    name: 'Usuario',
-    component: () => import('../views/UsuarioForm.vue'),
-    beforeEnter: (to, from, next) => ifAuthenticated(to, from, next)
-  },
-  {
-    path: '/usuario/form/:username',
-    name: 'EditarUsuario',
-    component: () => import('../views/UsuarioForm.vue'),
-    beforeEnter: (to, from, next) => ifAuthenticated(to, from, next)
+    path: '/register/:id',
+    name: 'RegisterEdit',
+    component: () => import('../views/Register.vue')
   }
+  // {
+  //   path: '/documentos',
+  //   name: 'Documentos',
+  //   component: () => import('../views/UserDocuments.vue'),
+  //   beforeEnter: (to, from, next) => isAuthenticated(to, from, next)
+  // },
+  // {
+  //   path: '/usuario',
+  //   name: 'ListarUsuarios',
+  //   component: () => import('../views/UsuarioIndex.vue'),
+  //   beforeEnter: (to, from, next) => isAuthenticated(to, from, next)
+  // },
+  // {
+  //   path: '/usuario/form',
+  //   name: 'Usuario',
+  //   component: () => import('../views/UsuarioForm.vue'),
+  //   beforeEnter: (to, from, next) => isAuthenticated(to, from, next)
+  // },
+  // {
+  //   path: '/usuario/form/:username',
+  //   name: 'EditarUsuario',
+  //   component: () => import('../views/UsuarioForm.vue'),
+  //   beforeEnter: (to, from, next) => isAuthenticated(to, from, next)
+  // }
 ]
 const router = new VueRouter({
   mode: 'history',
@@ -60,11 +65,8 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  document.title = 'IACON | Documentos'
-
-  // console.log('to :>> ', to)
-  // console.log('from :>> ', from)
-  // console.log('next :>> ', next)
+  document.title = 'IACON | Certificados'
+  if (to.name !== 'Login' && !isAuthenticated()) return next('/login')
   next()
 })
 

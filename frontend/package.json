@@ -1,12 +1,12 @@
 {
-  "name": "iacon-documentos-usuarios",
+  "name": "iacon-certificados",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "vue-cli-service serve --port 2260",
+    "start": "vue-cli-service serve --port 1010",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "dev": "vue-cli-service serve --port 2260"
+    "dev": "vue-cli-service serve --port 1010"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.31",
@@ -16,10 +16,11 @@
     "bootstrap": "^4.5.2",
     "bootstrap-vue": "^2.17.3",
     "core-js": "^3.6.5",
-    "sweetalert2": "^11.0.7",
+    "vee-validate": "^3.4.10",
     "vue": "^2.6.12",
     "vue-meta": "^2.4.0",
     "vue-router": "^3.2.0",
+    "vue-swal": "^1.0.0",
     "vuex": "^3.4.0"
   },
   "devDependencies": {

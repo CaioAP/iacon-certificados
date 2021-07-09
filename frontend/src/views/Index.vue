@@ -1,119 +1,291 @@
 <template>
-  <div class="d-flex justify-content-center">
-    <div class="glass-container">
-      <p>
-        Seja bem-vindo à Soma Contabilidades! Para facilitar cada vez mais o
-        processo de entrega de documentos, criamos uma plataforma que
-        centralizará a troca de informações entre nós Contabilidade e você,
-        nosso cliente. Com ela, você poderá anexar todos os arquivos necessários
-        para a realização dos fechamentos contábeis e receber relatórios e
-        resultados.
+  <section class="page container">
+    <h2 class="title">Certificados</h2>
+    <div class="content">
+      <certificate
+        v-for="certificate in certificates"
+        :key="certificate._id"
+        :id="certificate._id"
+        :user-name="certificate.userName"
+        :certificate-name="certificate.name"
+        :size="certificate.size"
+        :inserted-at="new Date(certificate.insertedAt)"
+        :expiration="new Date(certificate.expiration)"
+      ></certificate>
+      <p class="no-certificates" v-if="!certificates.length">
+        Você ainda não possui um certificado!
       </p>
     </div>
-    <img class="bg-image" :src="backgroundImage" alt="" />
-    <img class="logo-bottom" :src="logoBottom" alt="" />
-  </div>
+    <hr />
+    <validation-observer
+      ref="formulario"
+      v-slot="{ validate, invalid }"
+      tag="div"
+      class="form-files"
+      v-if="!isUserAdmin"
+    >
+      <form class="files" @submit.prevent="validate().then(addCertificates)">
+        <form-file v-model="certificateFiles" accept=".pfx" multiple required />
+        <div class="files-certificate">
+          <div
+            class="card card-certificate-file"
+            :class="validated[idx] ? 'valid' : 'invalid'"
+            v-for="(file, idx) in certificateFiles"
+            :key="idx"
+            :ref="'file-certificate-' + idx"
+          >
+            <span class="icon">
+              <fa :icon="validated[idx] ? 'check' : 'times'" />
+            </span>
+            <div class="card-content">
+              <p class="certificate-name">{{ file.name }}</p>
+              <div class="input-certificate d-flex">
+                <form-input
+                  type="password"
+                  v-model="file.password"
+                  :state="!!file.password"
+                  placeholder="Senha do certificado"
+                  class="input-certificate-password"
+                  required
+                />
+                <form-button
+                  variant="primary"
+                  name="Validar"
+                  class="btn-validate"
+                  :disabled="!file.password"
+                  @click="validateCertificate(file, file.password, idx)"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-buttons">
+          <form-button
+            type="submit"
+            variant="success"
+            name="Adicionar todos"
+            :disabled="invalid"
+          />
+          <form-button
+            variant="secondary"
+            name="Remover arquivos"
+            :disabled="!certificateFiles.length"
+            @click="removeCertificates"
+          />
+        </div>
+      </form>
+    </validation-observer>
+  </section>
 </template>
 
 <script>
-import { AUTH_REQUEST } from '../store/actions/auth'
+const ACTIONS = {
+  USER_CERTIFICATES: 'user',
+  INSERT_CERTIFICATES: 'insert',
+  VALIDATE_CERTIFICATE: 'validate'
+}
+
+const AXIOS_HEADERS = {
+  headers: {
+    'Content-Type': 'multipart/form-data'
+  }
+}
+
 export default {
-  name: 'login',
+  components: {
+    FormInput: () => import('@/components/Forms/FormInput.vue'),
+    FormButton: () => import('@/components/Forms/FormButton.vue'),
+    FormFile: () => import('@/components/Forms/FormFile.vue'),
+    Certificate: () => import('@/components/Certificate.vue')
+  },
   data() {
     return {
-      username: '',
-      password: '',
-      alertLogin: false
+      certificates: [],
+      certificateFiles: [],
+      validated: {}
     }
   },
   computed: {
-    backgroundImage() {
-      return require('@/assets/login-background.png')
+    user() {
+      return this.$store.getters.getUserData || null
     },
-    logoImage() {
-      return require('@/assets/logo-soma.png')
-    },
-    logoBottom() {
-      return require('@/assets/logo-gs.png')
+
+    isUserAdmin() {
+      return this.user.email === this.$root.admin
     }
   },
+  watch: {
+    certificateFiles(newValue) {
+      this.validated = {}
+      newValue.forEach((value, idx) => (this.validated[idx] = false))
+    }
+  },
+  mounted() {
+    this.waitForUser()
+  },
   methods: {
-    login: function() {
-      const { username, password } = this
-      this.$store
-        .dispatch(AUTH_REQUEST, { username, password })
-        .then(() => {
-          this.$router.push('/documentos')
-        })
-        .catch(() => {
-          this.alertLogin = true
-        })
+    waitForUser() {
+      if (!this.user._id) {
+        return setTimeout(this.waitForUser, 100)
+      }
+
+      this.getUserCertificates()
+    },
+
+    getUrl(action = '') {
+      return `${this.$root.serverURL}/certificates/${action}`
+    },
+
+    async getUserCertificates() {
+      try {
+        const url = this.isUserAdmin
+          ? this.getUrl()
+          : this.getUrl(ACTIONS.USER_CERTIFICATES) + `/${this.user._id}`
+
+        const { data } = await this.$axios.get(url)
+        this.certificates = this.orderCertificatesByExpiration(
+          data.certificates
+        )
+      } catch (error) {
+        this.$root.showErrorMessage(error.message)
+      }
+    },
+
+    orderCertificatesByExpiration(certificates) {
+      return certificates.sort((prior, next) => {
+        if (prior.expiration > next.expiration) return 1
+        if (prior.expiration < next.expiration) return -1
+        return 0
+      })
+    },
+
+    async addCertificates() {
+      try {
+        const url = this.getUrl(ACTIONS.INSERT_CERTIFICATES)
+        const post = this.handleFiles()
+
+        const { data } = await this.$axios.post(url, post, AXIOS_HEADERS)
+
+        this.getUserCertificates()
+        this.removeCertificates()
+        this.$root.showSuccessMessage(data.message)
+      } catch (error) {
+        this.$root.showErrorMessage(error.response.data.message)
+      }
+    },
+
+    handleFiles() {
+      const formData = new FormData()
+      const passwords = []
+
+      formData.append('userId', this.user._id)
+      this.certificateFiles.forEach((file, index) => {
+        formData.append(`certificate${index}`, file)
+        passwords.push(file.password)
+      })
+
+      formData.append(`passwords`, passwords) // ${index}
+
+      return formData
+    },
+
+    removeCertificates() {
+      this.certificateFiles = []
+    },
+
+    async validateCertificate(certificate, password, index) {
+      try {
+        const url = this.getUrl(ACTIONS.VALIDATE_CERTIFICATE)
+        const post = new FormData()
+        post.append('certificate', certificate)
+        post.append('password', password)
+
+        const { data } = await this.$axios.post(url, post, AXIOS_HEADERS)
+        console.log(data)
+
+        this.validated[index] = data.valid
+        this.validated = { ...this.validated }
+      } catch (error) {
+        this.validated[index] = error.response.data.valid
+        this.validated = { ...this.validated }
+        this.$root.showErrorMessage(error.response.data.message)
+      }
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.bg-image {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: -1;
-}
-.logo-image {
-  width: 100%;
-}
-.logo-bottom {
-  position: absolute;
-  bottom: 3vh;
-  max-width: 6vw;
-}
-.login {
+.files-certificate {
   display: flex;
   flex-direction: column;
-  width: 400px;
-  padding: 10px;
-  color: #fff;
-  position: absolute;
-  left: calc(50vw - 200px);
+  gap: 1rem;
+  margin-bottom: 15px;
 
-  .form-group {
-    input.form-control {
-      box-shadow: 0px 1px 2px 0px #00000088 !important;
+  .card-certificate-file {
+    flex-direction: row;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    gap: 1rem;
+
+    .icon {
+      width: calc(70px + 0.5rem);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+
+      svg {
+        width: 2em;
+        height: 2em;
+        color: var(--gray);
+      }
     }
-    input.form-control:focus {
-      transform: translateY(-1px);
-      border: 1px solid #007bff;
-      box-shadow: 0px 2px 4px 1px #00000088 !important;
+
+    .card-content {
+      width: 100%;
+
+      .certificate-name {
+        margin: 0;
+      }
+
+      .input-certificate {
+        gap: 1rem;
+
+        .input-certificate-password {
+          width: 100%;
+        }
+
+        .btn-validate {
+          height: fit-content;
+        }
+      }
     }
   }
 
-  .form-group:last-of-type {
-    margin-bottom: 32px;
+  .card-certificate-file.invalid {
+    border-color: var(--danger);
+
+    .icon svg {
+      color: var(--danger);
+    }
   }
 
-  button#btn-login {
-    margin-bottom: 24px;
-    box-shadow: 0px 1px 2px 0px #000000 !important;
-  }
-  button#btn-login:hover {
-    transform: translateY(-1px);
-    box-shadow: 0px 2px 4px 1px #000000 !important;
+  .card-certificate-file.valid {
+    border-color: var(--success);
+
+    .icon svg {
+      color: var(--success);
+    }
   }
 }
-.glass-container {
-  width: 80vw;
-  height: 72vh;
-  background-color: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  padding: 3rem;
-}
 
-.glass-container {
-  color: #ded;
-  font-size: 1.6rem;
-  text-align: center;
+.form-buttons {
+  button.btn:first-of-type {
+    margin-right: 6px;
+  }
+
+  button.btn:last-of-type {
+    margin-left: 6px;
+  }
 }
 </style>

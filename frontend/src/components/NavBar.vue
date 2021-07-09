@@ -1,155 +1,132 @@
 <template>
-    <div id="nav" class="nav">
-        <link
-            href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-            rel="stylesheet"
-            type="text/css"
-        />
-        <div class="nav-item">
-            <img :src="logoSoma" class="logo" id="logo-soma" />
+  <div id="nav" class="nav">
+    <div class="nav-item">
+      <img :src="logoIacon" class="logo" />
 
-            <router-link :to="{ name: 'Documentos' }"> Documentos </router-link>
+      <router-link :to="{ name: 'Index' }">
+        Certificados
+      </router-link>
 
-            <router-link :to="{ name: 'Usuario' }">
-                Cadastro de Usuários
-            </router-link>
-        </div>
-
-        <img :src="logoIacon" class="logo" id="logo-iacon" />
-        <div id="user-menu" class="user-menu">
-            <div class="user-menu-link" id="user-menu-link" >Sair</div>
-        </div>
+      <router-link :to="{ name: 'Register' }" v-if="isUserAdmin">
+        Cadastrar Cliente
+      </router-link>
     </div>
+
+    <form-button
+      class="btn-logout"
+      variant="default"
+      name="Sair"
+      @click="logout"
+    />
+  </div>
 </template>
 
 <script>
 import LogoIacon from '@/assets/logo-iacon.png'
-import LogoSoma from '@/assets/logo-soma.webp'
 import { AUTH_LOGOUT } from '../store/actions/auth'
+
 export default {
-    computed: {
-        logoIacon() {
-            return LogoIacon
-        },
-        logoSoma() {
-            return LogoSoma
-        },
+  components: {
+    FormButton: () => import('@/components/Forms/FormButton.vue')
+  },
+  computed: {
+    logoIacon() {
+      return LogoIacon
     },
-    methods: {
-        logout: function () {
-            this.$store
-                .dispatch(AUTH_LOGOUT)
-                .then(() => {
-                    this.$router.push('/documentos')
-                })
-                .catch(() => {
-                    this.alertLogin = true
-                })
-        },
-    },
-    mounted() {
-        document.addEventListener('mouseup', function (e) {
-            var ctxMenu = document.getElementById('user-menu')
-            if (!ctxMenu.contains(e.target)) {
-                ctxMenu.style.display = 'none'
-            }
-        })
 
-        document.getElementById('logo-iacon').addEventListener(
-            'contextmenu',
-            function (e) {
-                e.preventDefault()
-                var ctxMenu = document.getElementById('user-menu')
-                ctxMenu.style.display = 'block'
-                ctxMenu.classList.add(
-                    'animate__animated',
-                    'animate__fadeInDown',
-                    'animate__faster'
-                )
-            },
-            false
-        )
-
-        const dispatcher = this.$store.dispatch;
-        document.getElementById('user-menu-link').addEventListener(
-            'click',
-            function (e) {
-                e.preventDefault();
-                dispatcher(AUTH_LOGOUT);
-            },
-            false
-        )
+    user() {
+      return this.$store.getters.getUserData
     },
+
+    isUserAdmin() {
+      return this.user.email === this.$root.admin
+    }
+  },
+  methods: {
+    async logout() {
+      try {
+        await this.$store.dispatch(AUTH_LOGOUT)
+      } catch (error) {
+        this.$swal('Erro!', 'Oops! Erro ao sair...', 'error')
+      }
+    }
+  },
+  mounted() {}
 }
 </script>
 
 <style lang="scss" scoped>
-@font-face {
-    font-family: proximaNovaRegular;
-    src: url(../fonts/ProximaNovaRegular.ttf) format('truetype');
-}
 div#nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #001245;
+  min-height: 4rem;
+  box-shadow: 0px 2px 4px 0px #888888;
+  font-style: proximaNovaRegular;
+  margin-bottom: 2rem;
+
+  div.nav-item {
     display: flex;
     align-items: flex-end;
-    justify-content: space-between;
-    background-color: #001245;
-    padding: 0px;
-    min-height: 60px;
-    margin-bottom: 16px;
-    box-shadow: 0px 2px 4px 0px #888888;
-    font-style: proximaNovaRegular;
+    justify-content: flex-start;
+    min-height: 4rem;
+    width: 100%;
+  }
 
-    div.nav-item {
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-        min-height: 60px;
-    }
+  a {
+    margin: 0px 1rem;
+    color: #fff;
+    padding-bottom: 11px;
 
-    a {
-        margin: 0px 12px;
-        // color: #2c3e50;
-        color: #fff;
-        padding-bottom: 11px;
+    &.router-link-exact-active {
+      border-bottom: 2px solid #fff;
+      padding-bottom: 8px;
+    }
+  }
 
-        &.router-link-exact-active {
-            border-bottom: 3px solid #fff;
-            padding-bottom: 8px;
-            font-weight: bold;
-        }
-    }
-    a:hover {
-        text-decoration: none;
-    }
-    div.user-menu {
-        position: absolute;
-        background-color: rgba(255, 255, 255, 1);
-        width: 10rem;
-        height: 4rem;
-        top: 2.4rem;
-        right: 0.2rem;
-        box-shadow: -0.01em 0.01em 0.3em rgba(100, 100, 100, 1);
-        display: none;
+  a:hover {
+    text-decoration: none;
+  }
 
-        :hover {
-            cursor: pointer;
-        }
+  img.logo {
+    max-width: 14rem;
+    margin: auto 0.75rem;
+  }
 
-        div.user-menu-link {
-            margin: 0px 12px;
-            display: block;
-            margin-top: 0.8rem;
-            color: #666;
-            font-weight: 700;
-        }
-    }
+  .btn-logout {
+    color: var(--white);
+    border: 1px solid var(--white);
+  }
 
-    img.logo {
-        max-width: 12rem;
-        margin: auto 0.75rem;
-    }
-    img#logo-iacon {
-        max-width: 6rem;
-    }
+  .btn-logout:hover,
+  .btn-logout:focus {
+    color: var(--dark);
+    background-color: var(--white);
+  }
+}
+
+@media (min-width: 576px) {
+  .nav-item {
+    max-width: 540px;
+  }
+}
+
+@media (min-width: 768px) {
+  .nav-item {
+    max-width: 720px;
+  }
+}
+
+@media (min-width: 992px) {
+  .nav-item {
+    max-width: 960px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .nav-item {
+    max-width: 1140px;
+  }
 }
 </style>

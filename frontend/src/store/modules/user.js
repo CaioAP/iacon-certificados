@@ -3,26 +3,25 @@ import Vue from 'vue'
 import axios from 'axios'
 import { AUTH_LOGOUT } from '../actions/auth'
 
+const serverURL = `${location.protocol}//${location.hostname}:1011`
+
 const state = { status: '', userdata: {} }
 
 const getters = {
-  getUserdata: state => state.userdata,
-  isUserdataLoaded: state => !!state.userdata.name
+  getUserData: state => state.userdata,
+  isUserDataLoaded: state => !!state.userdata.name
 }
 
 const actions = {
-  [USER_REQUEST]: ({ commit, dispatch }) => {
-    commit(USER_REQUEST)
-    axios({ url: `http://${location.hostname}:2160/users` })
-      .then(resp => {
-        // console.log('resp.data :>> ', resp)
-        commit(USER_SUCCESS, resp)
-      })
-      .catch(error => {
-        console.log('error :>> ', error.response)
-        commit(USER_ERROR)
-        dispatch(AUTH_LOGOUT)
-      })
+  [USER_REQUEST]: async ({ commit, dispatch }, userId) => {
+    try {
+      commit(USER_REQUEST)
+      const { data } = await axios.get(`${serverURL}/users/${userId}`)
+      commit(USER_SUCCESS, data)
+    } catch (error) {
+      commit(USER_ERROR)
+      dispatch(AUTH_LOGOUT)
+    }
   }
 }
 
@@ -30,9 +29,9 @@ const mutations = {
   [USER_REQUEST]: state => {
     state.status = 'loading'
   },
-  [USER_SUCCESS]: (state, resp) => {
+  [USER_SUCCESS]: (state, userData) => {
     state.status = 'success'
-    Vue.set(state, 'userdata', resp.data)
+    Vue.set(state, 'userdata', userData)
   },
   [USER_ERROR]: state => {
     state.status = 'error'
